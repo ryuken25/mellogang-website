@@ -11,7 +11,23 @@ if ($loggedIn) {
 }
 
 $profileUrl = site_url('profile');
-$avatarUrl  = site_url('profile/avatar'); // endpoint baru
+$avatarUrl  = site_url('profile/avatar');
+
+$navItems = [];
+if ($role !== 'editor') {
+  $navItems[] = ['label' => 'Beranda',       'url' => site_url('/'),                'match' => $path === ''];
+  $navItems[] = ['label' => 'Paket',         'url' => site_url('/katalog'),         'match' => str_starts_with($path, 'katalog')];
+  $navItems[] = ['label' => 'Portofolio',    'url' => site_url('/portofolio'),      'match' => str_starts_with($path, 'portofolio')];
+  $navItems[] = ['label' => 'Status Pesanan','url' => site_url('/status-pesanan'),  'match' => str_starts_with($path, 'status-pesanan')];
+  $navItems[] = ['label' => 'Kontak',        'url' => site_url('/kontak'),          'match' => str_starts_with($path, 'kontak')];
+}
+if ($loggedIn && ($role === 'admin' || $role === 'editor')) {
+  $navItems[] = [
+    'label' => 'Dashboard',
+    'url'   => site_url($dashboardUrl),
+    'match' => str_starts_with($path, trim($dashboardUrl, '/')),
+  ];
+}
 ?>
 <header class="topbar">
   <div class="topbar__inner">
@@ -19,109 +35,122 @@ $avatarUrl  = site_url('profile/avatar'); // endpoint baru
       <img class="brand__logoimg"
            src="<?= base_url('assets/images/logomlg.png') ?>"
            alt="MellogangVisuals">
+      <span class="brand__name">Mellogang Visuals</span>
     </a>
 
-    <nav class="nav">
-      <?php if ($role !== 'editor'): ?>
-        <a class="<?= ($path === '' ? 'active' : '') ?>" href="<?= site_url('/') ?>">Beranda</a>
-        <a class="<?= (str_starts_with($path, 'katalog') ? 'active' : '') ?>" href="<?= site_url('/katalog') ?>">Paket</a>
-        <a class="<?= (str_starts_with($path, 'portofolio') ? 'active' : '') ?>" href="<?= site_url('/portofolio') ?>">Portofolio</a>
-        <a class="<?= (str_starts_with($path, 'status-pesanan') ? 'active' : '') ?>" href="<?= site_url('/status-pesanan') ?>">Status Pesanan</a>
-        <a class="<?= (str_starts_with($path, 'kontak') ? 'active' : '') ?>" href="<?= site_url('/kontak') ?>">Kontak</a>
-      <?php endif; ?>
+    <!-- Desktop nav -->
+    <nav class="nav nav--desktop" aria-label="Primary">
+      <?php foreach ($navItems as $item): ?>
+        <a class="<?= ! empty($item['match']) ? 'active' : '' ?>" href="<?= $item['url'] ?>"><?= esc($item['label']) ?></a>
+      <?php endforeach; ?>
 
       <?php if ($loggedIn): ?>
-
-        <?php if ($role === 'admin' || $role === 'editor'): ?>
-          <a class="<?= (str_starts_with($path, trim($dashboardUrl,'/')) ? 'active' : '') ?>"
-             href="<?= site_url($dashboardUrl) ?>">Dashboard</a>
-        <?php endif; ?>
-
-        <!-- Avatar + dropdown -->
         <div class="profileMenu" id="profileMenu">
-          <button type="button" class="profileBtn" id="profileBtn" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="profileBtn" id="profileBtn" aria-haspopup="true" aria-expanded="false" aria-label="Menu profil">
             <img class="profileAvatar" src="<?= esc($avatarUrl) ?>" alt="Profil">
           </button>
-
-          <div class="profileDropdown" id="profileDropdown">
-            <a class="profileItem" style="color:#111827" href="<?= esc($profileUrl) ?>">Profil</a>
-            <a class="profileItem" style="color:#111827" href="<?= site_url('/logout') ?>">Logout</a>
+          <div class="profileDropdown" id="profileDropdown" role="menu">
+            <a class="profileItem" href="<?= esc($profileUrl) ?>" role="menuitem">Profil</a>
+            <a class="profileItem" href="<?= site_url('/logout') ?>" role="menuitem">Logout</a>
           </div>
         </div>
-
       <?php else: ?>
-        <a class="<?= (str_starts_with($path, 'login') ? 'active' : '') ?>" href="<?= site_url('/login') ?>">Login</a>
+        <a class="navLogin" href="<?= site_url('/login') ?>">Login</a>
       <?php endif; ?>
     </nav>
+
+    <!-- Mobile toggle -->
+    <button type="button" class="navToggle" id="navToggle" aria-label="Buka menu" aria-controls="navMobile" aria-expanded="false">
+      <span class="navToggle__bar"></span>
+      <span class="navToggle__bar"></span>
+      <span class="navToggle__bar"></span>
+    </button>
   </div>
+
+  <!-- Mobile drawer -->
+  <div class="navBackdrop" id="navBackdrop" hidden></div>
+  <aside class="navDrawer" id="navMobile" aria-label="Menu mobile" aria-hidden="true">
+    <div class="navDrawer__head">
+      <span class="navDrawer__title">Menu</span>
+      <button type="button" class="navDrawer__close" id="navClose" aria-label="Tutup menu">&times;</button>
+    </div>
+
+    <nav class="navDrawer__list">
+      <?php foreach ($navItems as $item): ?>
+        <a class="navDrawer__link <?= ! empty($item['match']) ? 'active' : '' ?>" href="<?= $item['url'] ?>"><?= esc($item['label']) ?></a>
+      <?php endforeach; ?>
+    </nav>
+
+    <div class="navDrawer__foot">
+      <?php if ($loggedIn): ?>
+        <a class="navDrawer__link" href="<?= esc($profileUrl) ?>">Profil</a>
+        <a class="navDrawer__link navDrawer__link--danger" href="<?= site_url('/logout') ?>">Logout</a>
+      <?php else: ?>
+        <a class="navDrawer__link navDrawer__link--primary" href="<?= site_url('/login') ?>">Login</a>
+      <?php endif; ?>
+    </div>
+  </aside>
 </header>
 
-<style>
-/* avatar fixed 1:1 + crop */
-.profileMenu{ position:relative; display:inline-flex; align-items:center; }
-.profileBtn{
-  border:0; background:transparent; padding:0; margin-left:6px;
-  cursor:pointer;
-}
-.profileAvatar{
-  width:38px; height:38px;
-  border-radius:999px;
-  object-fit:cover;
-  display:block;
-  border:1px solid #e5e7eb;
-}
-
-.profileDropdown{
-  position:absolute;
-  right:0;
-  top:48px;
-  min-width:160px;
-  background:#fff;
-  border:1px solid #e5e7eb;
-  border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
-  padding:6px;
-  display:none;
-  z-index:9999;
-}
-.profileDropdown.show{ display:block; }
-
-.profileItem{
-  display:block;
-  padding:10px 10px;
-  border-radius:10px;
-  text-decoration:none;
-}
-.profileItem:hover{
-  background:#e5e7eb;     
-}
-</style>
-
-
 <script>
-(function(){
-  const btn = document.getElementById('profileBtn');
-  const dd  = document.getElementById('profileDropdown');
-  const menu= document.getElementById('profileMenu');
-  if(!btn || !dd || !menu) return;
+(function () {
+  const toggle = document.getElementById('navToggle');
+  const drawer = document.getElementById('navMobile');
+  const close  = document.getElementById('navClose');
+  const back   = document.getElementById('navBackdrop');
+  if (!toggle || !drawer) return;
 
-  function close(){
-    dd.classList.remove('show');
-    btn.setAttribute('aria-expanded','false');
+  function open() {
+    drawer.classList.add('is-open');
+    drawer.setAttribute('aria-hidden', 'false');
+    if (back) { back.hidden = false; back.classList.add('is-open'); }
+    toggle.classList.add('is-active');
+    toggle.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
   }
-
-  btn.addEventListener('click', function(e){
-    e.stopPropagation();
-    const isOpen = dd.classList.toggle('show');
-    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  function shut() {
+    drawer.classList.remove('is-open');
+    drawer.setAttribute('aria-hidden', 'true');
+    if (back) { back.classList.remove('is-open'); back.hidden = true; }
+    toggle.classList.remove('is-active');
+    toggle.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  toggle.addEventListener('click', function () {
+    if (drawer.classList.contains('is-open')) shut(); else open();
+  });
+  if (close) close.addEventListener('click', shut);
+  if (back)  back.addEventListener('click', shut);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && drawer.classList.contains('is-open')) shut();
+  });
+  // tutup saat klik link di dalam drawer
+  drawer.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', shut);
   });
 
-  document.addEventListener('click', function(e){
-    if(!menu.contains(e.target)) close();
-  });
-
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape') close();
-  });
+  // profile dropdown (desktop)
+  const profileBtn = document.getElementById('profileBtn');
+  const profileDd  = document.getElementById('profileDropdown');
+  const profileMenu = document.getElementById('profileMenu');
+  if (profileBtn && profileDd && profileMenu) {
+    profileBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      const open = profileDd.classList.toggle('show');
+      profileBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    document.addEventListener('click', function (e) {
+      if (!profileMenu.contains(e.target)) {
+        profileDd.classList.remove('show');
+        profileBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        profileDd.classList.remove('show');
+        profileBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
 })();
 </script>
