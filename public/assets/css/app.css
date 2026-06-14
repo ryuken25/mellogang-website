@@ -1192,6 +1192,43 @@ textarea.input { min-height: 80px; resize: vertical; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Scroll reveal */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal.is-in .porto-section__title,
+.reveal.is-in .porto-hero__title {
+  animation: portoFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.reveal.is-in .porto-section__eyebrow,
+.reveal.is-in .porto-hero__chip {
+  animation: portoFadeIn 0.5s 0.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.reveal.is-in .porto-filters,
+.reveal.is-in .porto-hero__meta {
+  animation: portoFadeIn 0.5s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.reveal.is-in .porto-tile,
+.reveal.is-in .porto-card {
+  animation: portoFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 50ms + 100ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal * {
+    transition: none !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* ============= MISC ============= */
 pre { background: var(--bg-elev); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); overflow-x: auto; font-size: 13px; }
 hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }

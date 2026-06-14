@@ -9,36 +9,61 @@ use App\Models\SocialPostModel;
 
 class PortofolioController extends BaseController
 {
+    /** @var string[] kategori kanonik */
+    private const CATEGORIES = [
+        'wedding', 'corporate', 'product', 'event',
+    ];
+
     public function index()
     {
         $portoModel = new PortofolioModel();
         $paketModel = new PaketModel();
 
-        // Ambil dari tabel portofolio tradisional
         $items = $portoModel->orderBy('id_portfolio', 'DESC')->findAll();
 
-        // Map nama paket
         $paketMap = [];
         foreach ($paketModel->findAll() as $p) {
             $paketMap[$p['id_paket']] = $p['nama_paket'];
         }
 
-        // Tambah dari cache social_post (featured) — yang di-fetch via
-        // tombol admin, BUKAN scraping saat visitor buka.
+        // Hitung thumb: prioritaskan kolom `thumbnail` (file lokal),
+        // fallback ke `url_media`, lalu placeholder.
+        foreach ($items as &$po) {
+            $thumb = base_url('assets/images/porto_placeholder.png');
+            $thumbName = (string)($po['thumbnail'] ?? '');
+            if ($thumbName !== '') {
+                $thumb = base_url('uploads/portofolio/' . $thumbName);
+            } else {
+                $url = (string)($po['url_media'] ?? '');
+                if ($url !== '' && preg_match('~\.(jpg|jpeg|png|webp|gif)(\?.*)?$~i', $url)) {
+                    $thumb = $url;
+                } elseif (preg_match('~youtu\.be/([^/?]+)~', $url, $m)) {
+                    $thumb = 'https://img.youtube.com/vi/' . $m[1] . '/hqdefault.jpg';
+                } elseif (preg_match('~v=([^&]+)~', $url, $m)) {
+                    $thumb = 'https://img.youtube.com/vi/' . $m[1] . '/hqdefault.jpg';
+                }
+            }
+            $po['thumb'] = $thumb;
+            $po['kategori'] = strtolower((string)($po['kategori'] ?? 'event'));
+            if (! in_array($po['kategori'], self::CATEGORIES, true)) {
+                $po['kategori'] = 'event';
+            }
+        }
+        unset($po);
+
+        // Tambahkan item dari cache social_post (kalau ada)
         try {
             $social = (new SocialPostModel())
                 ->orderBy('posted_at', 'DESC')
-                ->findAll(24);
+                ->findAll(12);
             foreach ($social as $s) {
-                if (empty($s['thumbnail_url']) && empty($s['media_url'])) {
-                    continue;
-                }
+                if (empty($s['thumbnail_url']) && empty($s['media_url'])) continue;
                 $items[] = [
                     'id_portfolio'      => 'soc_' . $s['id'],
                     'id_paket'          => null,
                     'judul'             => $s['title'] ?: ($s['caption'] ?: ucfirst((string) $s['platform'])),
                     'deskripsi'         => $s['caption'] ?? '',
-                    'kategori'          => strtoupper((string) ($s['platform'] ?? '')),
+                    'kategori'          => strtolower((string) ($s['platform'] ?? 'event')),
                     'url_media'         => $s['permalink'] ?? '',
                     'thumbnail'         => null,
                     'thumb'             => $s['thumbnail_url'] ?: ($s['media_url'] ?? ''),
@@ -48,32 +73,23 @@ class PortofolioController extends BaseController
                 ];
             }
         } catch (\Throwable $e) {
-            // tabel social_post belum ada / migration belum jalan → diam
+            // tabel belum ada → diam
         }
 
-        // Compute thumb untuk portofolio tradisional
-        foreach ($items as &$po) {
-            if (! empty($po['thumb'])) {
-                continue; // sudah di-set dari social_post
-            }
-            $thumb = base_url('assets/images/porto_placeholder.png');
-            $thumbName = (string)($po['thumbnail'] ?? '');
-            if ($thumbName !== '') {
-                $thumb = base_url('uploads/portofolio/' . $thumbName);
-            } else {
-                $url = (string)($po['url_media'] ?? '');
-                if (preg_match('~\.(jpg|jpeg|png|webp|gif)(\?.*)?$~i', $url)) $thumb = $url;
-                if (preg_match('~youtu\.be/([^/?]+)~', $url, $m)) $thumb = 'https://img.youtube.com/vi/'.$m[1].'/hqdefault.jpg';
-                if (preg_match('~v=([^&]+)~', $url, $m)) $thumb = 'https://img.youtube.com/vi/'.$m[1].'/hqdefault.jpg';
-            }
-            $po['thumb'] = $thumb;
+        // Pisahkan featured dan sisanya
+        $featured = array_values(array_filter($items, fn($i) => ! empty($i['is_featured'])));
+        $rest     = array_values(array_filter($items, fn($i) => empty($i['is_featured'])));
+        if (empty($featured)) {
+            $featured = array_slice($rest, 0, 6);
+            $rest     = array_slice($rest, 6);
         }
-        unset($po);
 
         return view('public/portofolio/index', [
-            'title' => 'Portofolio',
-            'items' => $items,
-            'paketMap' => $paketMap,
+            'title'      => 'Portfolio',
+            'featured'   => $featured,
+            'items'      => $rest,
+            'paketMap'   => $paketMap,
+            'categories' => self::CATEGORIES,
         ]);
     }
 }

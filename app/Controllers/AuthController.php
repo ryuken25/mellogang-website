@@ -46,10 +46,13 @@ class AuthController extends BaseController
     public function loginForm()
     {
         helper(['form', 'url']);
+        // Google selalu ditampilkan (kalau belum dikonfigurasi, klik tombol
+        // akan redirect dengan pesan "belum dikonfigurasi").
+        $googleOn = $this->google?->isConfigured() ?? false;
         return view('auth/login', [
             'title'      => 'Login',
             'validation' => service('validation'),
-            'googleOn'   => $this->google?->isConfigured() ?? false,
+            'googleOn'   => $googleOn,
         ]);
     }
 
@@ -324,8 +327,11 @@ class AuthController extends BaseController
 
     public function googleRedirect()
     {
-        if (! $this->google || ! $this->google->isConfigured()) {
-            return redirect()->to(site_url('login'))->with('error', 'Login Google belum dikonfigurasi.');
+        if (! $this->google) {
+            return redirect()->to(site_url('login'))->with('error', 'Login Google belum dikonfigurasi. Isi GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET di .env.');
+        }
+        if (! $this->google->isConfigured()) {
+            return redirect()->to(site_url('login'))->with('error', 'Login Google belum dikonfigurasi. Isi GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET di .env.');
         }
         $state = $this->google->getState();
         session()->set('oauth_state', $state);

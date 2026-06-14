@@ -11,79 +11,53 @@ class PortofolioSeeder extends Seeder
         $table = 'portofolio';
         $now = date('Y-m-d H:i:s');
 
-        // 6 url sesuai request
-        $urls = [
-            'https://www.youtube.com/watch?v=FzovkTS7ZgE',
-            'https://www.youtube.com/watch?v=vaOXHP0zlVU',
-            'https://www.youtube.com/watch?v=4WgJEnnQvHM',
-            'https://www.youtube.com/watch?v=h6Q0_5upkk4',
-            'https://www.youtube.com/watch?v=7RwTWRgLmHY',
-            'https://www.youtube.com/watch?v=8kSnL2fBCTU',
+        // Picsum images yang sudah di-download ke public/uploads/portofolio/
+        $items = [
+            ['slug' => 'wedding-premium-full-day',   'kategori' => 'wedding',   'paket' => 6, 'days_ago' => 30],
+            ['slug' => 'wedding-highlight-teaser',   'kategori' => 'wedding',   'paket' => 5, 'days_ago' => 50],
+            ['slug' => 'wedding-cinematic-bali',    'kategori' => 'wedding',   'paket' => 6, 'days_ago' => 75],
+            ['slug' => 'wedding-prewedding-jogja',   'kategori' => 'wedding',   'paket' => 5, 'days_ago' => 100],
+            ['slug' => 'corporate-mini-profile',     'kategori' => 'corporate', 'paket' => 4, 'days_ago' => 20],
+            ['slug' => 'corporate-launching',       'kategori' => 'corporate', 'paket' => 4, 'days_ago' => 45],
+            ['slug' => 'corporate-interview',       'kategori' => 'corporate', 'paket' => 4, 'days_ago' => 70],
+            ['slug' => 'product-cinematic-showcase', 'kategori' => 'product',   'paket' => 3, 'days_ago' => 15],
+            ['slug' => 'product-food-beverage',     'kategori' => 'product',   'paket' => 3, 'days_ago' => 40],
+            ['slug' => 'product-fashion-lookbook',  'kategori' => 'product',   'paket' => 3, 'days_ago' => 65],
+            ['slug' => 'event-reels-highlight-01',   'kategori' => 'event',     'paket' => 2, 'days_ago' => 25],
+            ['slug' => 'event-highlight-02',         'kategori' => 'event',     'paket' => 2, 'days_ago' => 55],
+            ['slug' => 'event-concert-stage',       'kategori' => 'event',     'paket' => 2, 'days_ago' => 85],
+            ['slug' => 'event-sport-motocross',     'kategori' => 'event',     'paket' => 2, 'days_ago' => 120],
         ];
 
-        $rows = [
-            [
-                'id_paket'           => 1,
-                'judul'             => 'Event Reels - Highlight 01',
-                'deskripsi'         => 'Reels cinematic untuk event, cut dinamis + grading.',
-                'kategori'          => 'event',
-                'url_media'         => $urls[0],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-120 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
-            [
-                'id_paket'           => 2,
-                'judul'             => 'Event Highlight - Highlight 02',
-                'deskripsi'         => 'Video highlight 1-2 menit untuk momen spesial.',
-                'kategori'          => 'event',
-                'url_media'         => $urls[1],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-110 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
-            [
-                'id_paket'           => 3,
-                'judul'             => 'Product Cinematic - Showcase',
-                'deskripsi'         => 'Video produk cinematic untuk promosi brand.',
-                'kategori'          => 'product',
-                'url_media'         => $urls[2],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-95 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
-            [
-                'id_paket'           => 4,
-                'judul'             => 'Corporate Mini Profile',
-                'deskripsi'         => 'Company profile singkat dengan storytelling rapi.',
-                'kategori'          => 'corporate',
-                'url_media'         => $urls[3],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-80 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
-            [
-                'id_paket'           => 5,
-                'judul'             => 'Wedding Highlight - Teaser',
-                'deskripsi'         => 'Wedding highlight cinematic + teaser reels.',
-                'kategori'          => 'wedding',
-                'url_media'         => $urls[4],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-60 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
-            [
-                'id_paket'           => 6,
-                'judul'             => 'Premium Wedding - Full Day',
-                'deskripsi'         => 'Full coverage wedding day dengan editing premium.',
-                'kategori'          => 'wedding',
-                'url_media'         => $urls[5],
-                'tanggal_publikasi' => date('Y-m-d', strtotime('-45 days')),
-                'created_at'        => $now,
-                'updated_at'        => $now,
-            ],
+        $descs = [
+            'wedding'   => 'Wedding cinematic dengan color grading premium, dokumentasi penuh dari pra-acara hingga resepsi.',
+            'corporate' => 'Company profile dengan storytelling rapi, tone profesional, dan output multi-format.',
+            'product'   => 'Video produk cinematic untuk promosi brand, durasi pendek dengan impact tinggi.',
+            'event'     => 'Highlight event dengan cut cepat, color grading sinematik, dan musik yang pas.',
         ];
 
-        $this->db->table($table)->insertBatch($rows);
+        $baseUrl = rtrim(base_url(), '/');
+
+        $rows = [];
+        foreach ($items as $it) {
+            $filename = $it['slug'] . '.jpg';
+            $rows[] = [
+                'id_paket'           => $it['paket'],
+                'judul'              => ucwords(str_replace('-', ' ', $it['slug'])),
+                'deskripsi'          => $descs[$it['kategori']] ?? 'Karya MellogangVisuals.',
+                'kategori'           => $it['kategori'],
+                'url_media'          => $baseUrl . '/uploads/portofolio/' . $filename,
+                'thumbnail'          => $filename,
+                'tanggal_publikasi'  => date('Y-m-d', strtotime('-' . $it['days_ago'] . ' days')),
+                'created_at'         => $now,
+                'updated_at'         => $now,
+            ];
+        }
+
+        if (! empty($rows)) {
+            // Idempotent: hapus dulu kalau ada duplicate
+            $this->db->table($table)->truncate();
+            $this->db->table($table)->insertBatch($rows);
+        }
     }
 }

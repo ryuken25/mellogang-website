@@ -1,45 +1,74 @@
 <?= $this->extend('layout/admin') ?>
+
 <?= $this->section('adminContent') ?>
 
-<div class="auth-wrap">
-  <h1 class="auth-title">Admin - Paket</h1>
-  <p class="auth-sub">Kelola paket layanan (CRUD).</p>
+<?php
+$isEn = \App\Support\I18n::isEn();
+?>
 
-  <div class="card" style="max-width:900px;">
-    <?php if (session()->getFlashdata('success')): ?>
-      <div class="alert ok"><?= esc(session()->getFlashdata('success')) ?></div>
-    <?php endif; ?>
+<div class="admin-hero">
+  <div>
+    <div class="admin-hero__chip"><?= $isEn ? 'Catalog' : 'Katalog' ?></div>
+    <h1 class="admin-hero__title"><?= $isEn ? 'Packages' : 'Paket' ?></h1>
+    <p class="admin-hero__sub"><?= $isEn ? 'Manage your service packages — add, edit, and toggle availability.' : 'Kelola paket layanan — tambah, edit, dan atur ketersediaan.' ?></p>
+  </div>
+  <a class="btn btn-primary" href="<?= site_url('admin/paket/create') ?>">
+    <span>+ <?= $isEn ? 'Add package' : 'Tambah Paket' ?></span>
+  </a>
+</div>
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <a class="tab active" href="<?= site_url('/admin/paket/create') ?>" style="margin:0;">+ Tambah Paket</a>
-    </div>
+<?php if (session()->getFlashdata('success')): ?>
+  <div class="alert ok"><?= esc(session()->getFlashdata('success')) ?></div>
+<?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+  <div class="alert error"><?= esc(session()->getFlashdata('error')) ?></div>
+<?php endif; ?>
 
-    <table style="width:100%; border-collapse:collapse;">
+<div class="panel" style="padding:0;overflow:hidden;">
+  <div style="overflow-x:auto;">
+    <table class="table" style="margin:0;">
       <thead>
-        <tr style="text-align:left;">
-          <th style="padding:10px;border-bottom:1px solid #e5e7eb;">Nama</th>
-          <th style="padding:10px;border-bottom:1px solid #e5e7eb;">Kategori</th>
-          <th style="padding:10px;border-bottom:1px solid #e5e7eb;">Harga</th>
-          <th style="padding:10px;border-bottom:1px solid #e5e7eb;">Aktif</th>
-          <th style="padding:10px;border-bottom:1px solid #e5e7eb;">Aksi</th>
+        <tr>
+          <th style="min-width:240px;"><?= $isEn ? 'Name' : 'Nama' ?></th>
+          <th style="min-width:120px;"><?= $isEn ? 'Category' : 'Kategori' ?></th>
+          <th style="min-width:140px;"><?= $isEn ? 'Price' : 'Harga' ?></th>
+          <th style="min-width:80px;"><?= $isEn ? 'Active' : 'Aktif' ?></th>
+          <th style="min-width:160px;"><?= $isEn ? 'Actions' : 'Aksi' ?></th>
         </tr>
       </thead>
       <tbody>
-      <?php foreach ($paket as $p): ?>
-        <tr>
-          <td style="padding:10px;border-bottom:1px solid #f1f5f9;"><?= esc($p['nama_paket']) ?></td>
-          <td style="padding:10px;border-bottom:1px solid #f1f5f9;"><?= esc($p['kategori']) ?></td>
-          <td style="padding:10px;border-bottom:1px solid #f1f5f9;">Rp <?= number_format((int)$p['harga'], 0, ',', '.') ?></td>
-          <td style="padding:10px;border-bottom:1px solid #f1f5f9;"><?= (int)$p['is_active'] === 1 ? 'Ya' : 'Tidak' ?></td>
-          <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
-            <a class="link" href="<?= site_url('/admin/paket/edit/'.$p['id_paket']) ?>">Edit</a>
-            <form method="post" action="<?= site_url('/admin/paket/delete/'.$p['id_paket']) ?>" style="display:inline;">
-              <?= csrf_field() ?>
-              <button type="submit" class="link" style="border:0;background:none;cursor:pointer;color:#b91c1c;">Hapus</button>
-            </form>
-          </td>
-        </tr>
-      <?php endforeach; ?>
+        <?php if (empty($paket)): ?>
+          <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);"><?= $isEn ? 'No packages yet.' : 'Belum ada paket.' ?></td></tr>
+        <?php else: ?>
+          <?php foreach ($paket as $p): ?>
+            <tr>
+              <td>
+                <div style="font-weight:600;"><?= esc($p['nama_paket']) ?></div>
+                <?php if (! empty($p['deskripsi'])): ?>
+                  <div style="color:var(--muted);font-size:12px;margin-top:2px;"><?= esc(mb_strimwidth((string) $p['deskripsi'], 0, 60, '…')) ?></div>
+                <?php endif; ?>
+              </td>
+              <td><span class="pill"><?= esc($p['kategori']) ?></span></td>
+              <td style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--brand);">Rp <?= number_format((int) $p['harga'], 0, ',', '.') ?></td>
+              <td>
+                <?php if ((int) $p['is_active'] === 1): ?>
+                  <span class="pill status-ok"><?= $isEn ? 'Yes' : 'Ya' ?></span>
+                <?php else: ?>
+                  <span class="pill status-danger"><?= $isEn ? 'No' : 'Tidak' ?></span>
+                <?php endif; ?>
+              </td>
+              <td>
+                <div style="display:flex;gap:6px;">
+                  <a class="btnGhost" style="padding:4px 10px;font-size:12px;" href="<?= site_url('admin/paket/edit/'.$p['id_paket']) ?>"><?= $isEn ? 'Edit' : 'Edit' ?></a>
+                  <form method="post" action="<?= site_url('admin/paket/delete/'.$p['id_paket']) ?>" style="display:inline;" onsubmit="return confirm('<?= $isEn ? 'Delete this package?' : 'Hapus paket ini?' ?>');">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btnDanger" style="padding:4px 10px;font-size:12px;"><?= $isEn ? 'Delete' : 'Hapus' ?></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>

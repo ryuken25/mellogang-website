@@ -1,25 +1,51 @@
 <?php
-$path = service('uri')->getPath();
+$uri = service('uri');
+$path = $uri->getPath();
 
-function isActive($path, $needle) {
-  // active kalau path sama persis atau diawali (admin/paket/...)
+function isAdminActive($path, $needle) {
   return $path === $needle || str_starts_with($path, $needle . '/');
 }
+
+$navItems = [
+  ['label' => 'Overview',    'url' => site_url('admin'),             'match' => $path === 'admin' || $path === 'admin/'],
+  ['label' => 'Bookings',    'url' => site_url('admin/pemesanan'),   'match' => str_starts_with($path, 'admin/pemesanan')],
+  ['label' => 'Schedule',    'url' => site_url('admin/jadwal'),      'match' => str_starts_with($path, 'admin/jadwal')],
+  ['label' => 'Packages',    'url' => site_url('admin/paket'),        'match' => str_starts_with($path, 'admin/paket')],
+  ['label' => 'Portfolio',   'url' => site_url('admin/portofolio'),  'match' => str_starts_with($path, 'admin/portofolio')],
+  ['label' => 'Payments',    'url' => site_url('admin/pembayaran'),   'match' => str_starts_with($path, 'admin/pembayaran')],
+  ['label' => 'Users',       'url' => site_url('admin/users'),        'match' => str_starts_with($path, 'admin/users')],
+  ['label' => 'Reports',     'url' => site_url('admin/laporan'),      'match' => str_starts_with($path, 'admin/laporan')],
+  ['label' => 'Social cache','url' => site_url('admin/social'),       'match' => str_starts_with($path, 'admin/social')],
+];
 ?>
-<div class="adminSide">
-  <div class="adminSide__title">Dashboard</div>
+<aside class="adminSide">
+  <div class="adminSide__head">
+    <div class="adminSide__brand">
+      <img src="<?= base_url('assets/images/logomlg.png') ?>" alt="MellogangVisuals">
+      <div>
+        <div class="adminSide__title">Admin</div>
+        <div class="adminSide__sub">Mellogang Visuals</div>
+      </div>
+    </div>
+  </div>
 
   <nav class="adminNav">
-    <a class="<?= isActive($path, 'admin') ? 'active' : '' ?>" href="<?= site_url('admin') ?>">Overview</a>
-    <a class="<?= isActive($path, 'admin/pemesanan') ? 'active' : '' ?>" href="<?= site_url('admin/pemesanan') ?>">Pemesanan</a>
-    <a class="<?= isActive($path, 'admin/jadwal') ? 'active' : '' ?>" href="<?= site_url('admin/jadwal') ?>">Jadwal</a>
-    <a class="<?= isActive($path, 'admin/paket') ? 'active' : '' ?>" href="<?= site_url('admin/paket') ?>">Paket</a>
-    <a class="<?= isActive($path, 'admin/portofolio') ? 'active' : '' ?>" href="<?= site_url('admin/portofolio') ?>">Portofolio</a>
-    <a class="<?= isActive($path, 'admin/pembayaran') ? 'active' : '' ?>" href="<?= site_url('admin/pembayaran') ?>">Pembayaran</a>
-    <a class="<?= url_is('admin/users*') ? 'active' : '' ?>" href="<?= site_url('admin/users') ?>">Users</a>
-    <a class="<?= isActive($path, 'admin/laporan') ? 'active' : '' ?>" href="<?= site_url('admin/laporan') ?>">Laporan</a>
-
-    <div class="adminNav__divider"></div>
-    <a href="<?= site_url('logout') ?>">Logout</a>
+    <?php foreach ($navItems as $item): ?>
+      <a class="adminNav__item <?= isAdminActive($path, $item['match']) ? 'is-active' : '' ?>" href="<?= esc($item['url']) ?>">
+        <span class="adminNav__dot"></span>
+        <span><?= esc($item['label']) ?></span>
+      </a>
+    <?php endforeach; ?>
   </nav>
-</div>
+
+  <div class="adminSide__foot">
+    <a class="adminNav__item" href="<?= site_url('/') ?>">
+      <span class="adminNav__dot"></span>
+      <span>Back to site</span>
+    </a>
+    <a class="adminNav__item adminNav__item--danger" href="<?= site_url('/logout') ?>">
+      <span class="adminNav__dot"></span>
+      <span>Sign out</span>
+    </a>
+  </div>
+</aside>
