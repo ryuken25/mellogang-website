@@ -1,101 +1,160 @@
-# MellogangVisuals Ordering & Production Tracking System
+# MellogangVisuals — Ordering & Production Tracking System
 
-Web-based information system for managing photo/video service orders: catalog & portfolio, ordering, payment proof upload, admin verification, scheduling, and editing progress tracking.
+Web app untuk mengelola pesanan layanan foto/video: katalog, portofolio,
+pemesanan, verifikasi pembayaran, penjadwalan produksi, tracking progres
+editing, dan serah terima hasil via Google Drive.
+
+## Apa yang Baru (v2 / 2026-06-14)
+
+- **Upgrade CodeIgniter ke 4.7.3** (composer.json pinned ke `^4.7`).
+- **Auth overhaul**:
+  - Register dengan verifikasi OTP via email.
+  - Login dengan Google (`league/oauth2-google`).
+  - Lockout 4x salah → link unlock via email (30 menit).
+  - Throttler (IP) di login/register/OTP-resend/unlock.
+  - CSRF di semua POST.
+  - **Anti dot-trick & plus-alias**: `tes.s@gmail.com` dan
+    `tess@gmail.com` dianggap akun yang sama. Dihandle oleh
+    `App\Libraries\EmailNormalizer` dan kolom `user.email_canonical`
+    (UNIQUE). Unit-tested.
+- **Database**:
+  - Migration drift fix (tabel `detail_pemesanan`, kolom
+    `portofolio.thumbnail`).
+  - Kolom auth: `email_canonical`, `email_verified_at`, `google_id`,
+    `auth_provider`, `avatar_url`, `failed_login_attempts`,
+    `locked_until`, `last_login_at`.
+  - Kolom deliverable: `jadwal_produksi.link_hasil`,
+    `link_hasil_hash`, `link_hasil_terkirim_at`.
+  - Tabel baru: `auth_token`, `social_post`, `social_fetch_job`.
+  - Index untuk kolom yang sering difilter (`pemesanan.status_pemesanan`,
+    `jadwal_produksi.status_produksi`, composite, dll).
+  - Status dinormalisasi ke bentuk kanonik (lowercase + snake_case)
+    lewat `App\Support\Status`. Tidak ada lagi query `LOWER(col) = '...'`
+    yang mematikan index.
+  - Tipe uang di-widening ke `BIGINT UNSIGNED`.
+- **SMTP**:
+  - 4 jenis email branded (verifikasi OTP, unlock, invoice, hasil siap).
+  - Invoice PDF via `dompdf/dompdf` (attachment).
+  - Email "hasil siap" **idempotent** (hash link, jangan kirim dua kali).
+- **UI redesign**: tema gelap-sinematik, primary teal `#00F5B8`,
+  self-hosted fonts (Space Grotesk + Inter), favicon, OG meta.
+- **Security headers** (`App\Filters\SecurityHeaders`): CSP, XFO, XCTO,
+  Referrer-Policy, Permissions-Policy.
+- **Social fetcher**: tombol admin-only di `/admin/social/fetch` →
+  worker Node Playwright (`tools/social-fetcher/worker.js`) dengan mode
+  fixture untuk test e2e deterministik. Portofolio publik baca dari
+  cache `social_post` (tidak scraping saat visitor buka).
+- **Testing**:
+  - PHPUnit unit/integration (23 tests passing untuk EmailNormalizer,
+    Status, ResultNotifier).
+  - Playwright e2e (login tiap role, dot-trick, social fetch).
+- **Dokumentasi & DECISIONS.md** di root.
+
+Lihat [DECISIONS.md](DECISIONS.md) untuk detail keputusan teknis.
+
+## Stack
+
+- PHP 8.1+ (target runtime 8.2/8.3)
+- CodeIgniter 4.7.3
+- MySQL / MariaDB (InnoDB, utf8mb4)
+- Bootstrap 5 + jQuery untuk komponen tertentu (modal pop-up)
+- Composer (PHP), npm (Node Playwright worker + e2e tests)
 
 ## Roles
-- **Admin**: manage packages & portfolio, verify payments, assign editor & schedule production, reporting
-- **Editor**: update production progress and handle assigned tasks
-- **Pelanggan**: create orders, upload payment proofs, track status & progress
 
-## Public Pages (No Login)
-- Home: `/`
-- Katalog: `/katalog`
-- Portofolio: `/portofolio`
-- Kontak: `/kontak`
-- Status Pesanan: `/status-pesanan`
-  - `GET /status-pesanan?kode=KODE` → order detail + progress tracking
-- Invoice: `GET /invoice/{kode_pemesanan}`
-
-## Core Features
-- Authentication: register / login / logout
-- Role-based access control (admin/editor/pelanggan)
-- Pemesanan: create order + select package + event details
-- Pembayaran: upload payment proof (DP / pelunasan), admin verification
-- Penjadwalan: admin assigns editor + production schedule
-- Progres editing: editor updates status produksi (`cut-to-cut → finishing → done`)
-- Laporan (admin)
-
-## Tech Stack
-- PHP 8.1+
-- CodeIgniter 4
-- MySQL/MariaDB
-- Composer
-
-## Database
-This project includes **migrations** and **seeders** under:
-- `app/Database/Migrations`
-- `app/Database/Seeds`
-
-### Common tables
-- `user`
-- `paket`
-- `pemesanan`
-- `pembayaran`
-- `jadwal_produksi`
-- `portofolio`
-- (optional) `pengeluaran_operasional`
-
-## File Storage
-Runtime uploads are stored under:
-- Payment proofs: `writable/uploads/pembayaran`
-- User avatars: `writable/uploads/avatars`
-- Portfolio images: `public/uploads/portofolio`
-
-> Recommendation: keep uploaded files out of git (use `.gitignore`) and keep empty directories tracked using `.gitkeep`.
-
----
+| Role | Namespace | Default route |
+|------|-----------|---------------|
+| Admin | `App\Controllers\Admin\` | `/admin` |
+| Editor | `App\Controllers\Editor\` | `/editor` |
+| Pelanggan | `App\Controllers\Pelanggan\` | `/pelanggan` |
+| Public | `App\Controllers\Public\` | `/` |
 
 ## Local Setup
 
-### 1) Install dependencies
+### Prasyarat
+
+- PHP 8.1+ dengan ekstensi `intl`, `mbstring`, `mysqlnd`, `gd`, `curl`,
+  `openssl`.
+- Composer.
+- MySQL/MariaDB.
+- (Untuk social fetcher & e2e) Node 18+ LTS.
+
+### Langkah
+
 ```bash
+# 1. Install PHP dependencies
 composer install
-```
 
-### 2) Configure environment
-Create `.env` (recommended from `.env.example`) and set:
-- `app.baseURL`
-- `database.default.hostname`
-- `database.default.database`
-- `database.default.username`
-- `database.default.password`
+# 2. Salin env
+cp .env.example .env
+# edit .env sesuai database + (opsional) SMTP
 
-### 3) Run migrations
-```bash
+# 3. Migrate + seed
 php spark migrate
+php spark db:seed DatabaseSeeder   # opsional
+
+# 4. Jalankan
+php spark serve --port 8080
+# buka http://localhost:8080
+
+# 5. (Opsional) Install Playwright untuk e2e + social fetcher
+cd tools/social-fetcher
+npm install
+npx playwright install --with-deps chromium
+cd ../..
+cd tests/e2e
+npm install
+npx playwright install --with-deps chromium
+cd ../..
 ```
 
-### 4) Seed sample data (optional)
+## Demo Accounts (dari seeder)
+
+Password semua akun: `123123`
+
+| Role | Email |
+|------|-------|
+| Admin | `admin@mellogang.test` |
+| Editor | `editor1@mellogang.test`, `editor@mellogang.test` |
+| Pelanggan | `pengguna1@mellogang.test`, `pengguna2@mellogang.test`, `pengguna3@mellogang.test` |
+
+## Testing
+
 ```bash
-php spark db:seed DatabaseSeeder
+# Unit / integration (PHPUnit)
+composer test
+# atau
+./vendor/bin/phpunit --no-coverage
+
+# e2e (Playwright) — butuh server jalan di background
+php spark serve --port 8080 &
+cd tests/e2e
+npm install
+npx playwright install --with-deps chromium
+npm test
 ```
 
-### 5) Run the app
-Option A (built-in server):
-```bash
-php spark serve -- port 8080
-```
-Open: `http://localhost:8080`
+## File Upload Paths
 
+- Bukti bayar: `writable/uploads/pembayaran/`
+- Avatar: `writable/uploads/avatars/`
+- Portofolio: `public/uploads/portofolio/`
+- File preview produksi: `writable/uploads/progres/{id_jadwal}/`
+- IG storageState: `writable/secure/ig_state.json` (**JANGAN** commit)
+- Email spool (testing): `writable/email-spool/`
+- Invoice PDF sementara: `writable/invoice-tmp/`
 
-## Demo Accounts (Seeder)
-Password: `123123`
+## Catatan Deploy
 
-- Admin: `admin@mellogang.test`
-- Editor: `editor1@mellogang.test` / `editor@mellogang.test`
-- Pelanggan: `pengguna1@mellogang.test` (also `pengguna2`, `pengguna3`)
+- **PHP app** ringan, jalan di shared hosting biasa.
+- **Social fetcher** butuh Node + Chromium → wajib **VPS kecil (≥1GB RAM)**.
+  Lihat `tools/social-fetcher/README.md` (TODO) atau
+  [DECISIONS.md §2](DECISIONS.md#2-hosting-vps-untuk-social-fetch).
+- IG scraping = area abu-abu ToS. Untuk produksi serius, pertimbangkan
+  Graph API resmi (perlu app review Meta).
+- Email SMTP gratisan (Gmail/Yahoo) sering masuk Spam di first-send —
+  aplikasi selalu menampilkan catatan "Cek Spam/Promosi".
 
----
+## Lisensi
 
-## License
-Educational / portfolio project. Add a proper license (e.g., MIT) if you plan to open-source it publicly.
+Educational / portfolio project.

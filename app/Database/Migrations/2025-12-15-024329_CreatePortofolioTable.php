@@ -40,6 +40,11 @@ class CreatePortofolioTable extends Migration
                 'type' => 'DATE',
                 'null' => true,
             ],
+            'thumbnail' => [ // ✅ tambahan sesuai tabel 4.5
+                'type'       => 'VARCHAR',
+                'constraint' => 255,
+                'null'       => true,
+            ],
             'created_at' => [
                 'type' => 'DATETIME',
                 'null' => true,
@@ -53,10 +58,13 @@ class CreatePortofolioTable extends Migration
         $this->forge->addKey('id_portfolio', true);
         $this->forge->addKey('id_paket');
 
+        // ✅ Foreign Key ke paket
+        $this->forge->addForeignKey('id_paket', 'paket', 'id_paket', 'CASCADE', 'CASCADE');
+
         $this->forge->createTable('portofolio', true, [
-            'ENGINE'  => 'InnoDB',
-            'DEFAULT CHARSET' => 'utf8mb4',
-            'COLLATE' => 'utf8mb4_unicode_ci',
+            'ENGINE'         => 'InnoDB',
+            'DEFAULT CHARSET'=> 'utf8mb4',
+            'COLLATE'        => 'utf8mb4_unicode_ci',
         ]);
     }
 

@@ -77,11 +77,13 @@ class LaporanController extends BaseController
         $pay = $this->normalizePay($this->request->getGet('pay'));
 
         // =========================
-        // 1) TOTAL PEMASUKAN (VALID)
+        // 1) TOTAL PEMASUKAN (VALID) — exclude batal/ditolak
         // =========================
-        $rowSum = $db->table('pembayaran')
-            ->selectSum('jumlah_bayar', 'total')
-            ->where('status_verifikasi', 'valid')
+        $rowSum = $db->table('pembayaran p')
+            ->selectSum('p.jumlah_bayar', 'total')
+            ->join('pemesanan o', 'o.id_pemesanan = p.id_pemesanan', 'left')
+            ->where('p.status_verifikasi', 'valid')
+            ->whereNotIn('o.status_pemesanan', ['batal', 'ditolak'])
             ->get()->getRowArray();
 
         $totalPemasukan = (int) ($rowSum['total'] ?? 0);
@@ -168,6 +170,7 @@ class LaporanController extends BaseController
                 ', false)
                 ->join('user u', 'u.id_user = o.id_user', 'left')
                 ->join('pembayaran p', 'p.id_pemesanan = o.id_pemesanan', 'left')
+                ->whereNotIn('o.status_pemesanan', ['batal', 'ditolak'])
                 ->groupBy('o.id_pemesanan')
                 ->orderBy('o.tanggal_pemesanan', 'DESC')
                 ->get()->getResultArray();
@@ -238,6 +241,7 @@ class LaporanController extends BaseController
             ', false)
             ->join('user u', 'u.id_user = o.id_user', 'left')
             ->join('pembayaran p', 'p.id_pemesanan = o.id_pemesanan', 'left')
+            ->whereNotIn('o.status_pemesanan', ['batal', 'ditolak'])
             ->groupBy('o.id_pemesanan')
             ->orderBy('o.tanggal_pemesanan', 'DESC')
             ->get()->getResultArray();

@@ -63,6 +63,13 @@ class PembayaranController extends BaseController
                 ->with('error', 'Pesanan tidak ditemukan / bukan milik kamu.');
         }
 
+        // Block pembayaran jika pesanan sudah batal atau ditolak
+        $statusLower = strtolower(trim((string)($order['status_pemesanan'] ?? '')));
+        if (in_array($statusLower, ['batal', 'ditolak'], true)) {
+            return redirect()->to(site_url('status-pesanan'))
+                ->with('error', 'Pesanan sudah dibatalkan. Tidak bisa melakukan pembayaran.');
+        }
+
         $total = (int)($order['total_biaya'] ?? 0);
         $dpDue = (int) ceil($total * 0.5);
 
@@ -114,13 +121,20 @@ class PembayaranController extends BaseController
         $idUser = (int) session()->get('id_user');
 
         $order = $db->table('pemesanan')
-            ->select('id_pemesanan,kode_pemesanan,id_user,total_biaya')
+            ->select('id_pemesanan,kode_pemesanan,id_user,total_biaya,status_pemesanan')
             ->where('id_pemesanan', (int)$idPemesanan)
             ->get()->getRowArray();
 
         if (!$order || (int)$order['id_user'] !== $idUser) {
             return redirect()->to(site_url('status-pesanan'))
                 ->with('error', 'Pesanan tidak ditemukan / bukan milik kamu.');
+        }
+
+        // Block pembayaran jika pesanan sudah batal atau ditolak
+        $statusLower = strtolower(trim((string)($order['status_pemesanan'] ?? '')));
+        if (in_array($statusLower, ['batal', 'ditolak'], true)) {
+            return redirect()->to(site_url('status-pesanan'))
+                ->with('error', 'Pesanan sudah dibatalkan. Tidak bisa melakukan pembayaran.');
         }
 
         $total = (int)($order['total_biaya'] ?? 0);

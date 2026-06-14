@@ -80,7 +80,6 @@ class PemesananController extends BaseController
 
         $db->transStart();
         $db->table('pembayaran')->where('id_pemesanan', $id)->delete();
-        $db->table('detail_pemesanan')->where('id_pemesanan', $id)->delete();
         $db->table('jadwal_produksi')->where('id_pemesanan', $id)->delete();
         $db->table('pemesanan')->where('id_pemesanan', $id)->delete();
         $db->transComplete();

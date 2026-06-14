@@ -39,6 +39,20 @@ $routes->get('register', 'AuthController::registerForm');
 $routes->post('register', 'AuthController::register');
 $routes->get('logout', 'AuthController::logout');
 
+// Verifikasi OTP (post-register)
+$routes->get('auth/verify', 'AuthController::verifyForm');
+$routes->post('auth/verify', 'AuthController::verify');
+$routes->get('auth/verify-link', 'AuthController::verifyLink');
+$routes->post('auth/resend-otp', 'AuthController::resendOtp');
+
+// Unlock akun (link dari email)
+$routes->get('auth/unlock', 'AuthController::unlock');
+$routes->get('auth/unlock/(:any)', 'AuthController::unlock/$1');
+
+// Google OAuth
+$routes->get('auth/google/redirect', 'AuthController::googleRedirect');
+$routes->get('auth/google/callback', 'AuthController::googleCallback');
+
 // Public pages
 $routes->get('katalog', 'Public\\KatalogController::index');
 $routes->get('portofolio', 'Public\\PortofolioController::index');
@@ -50,6 +64,9 @@ $routes->get('status-pesanan', 'Public\\StatusController::index');
 // Revisi request + konfirmasi selesai (POST)
 $routes->post('status-pesanan/revisi/(:num)', 'Public\\StatusController::revisi/$1');
 $routes->post('status-pesanan/selesai/(:num)', 'Public\\StatusController::selesai/$1');
+
+// Public file preview download
+$routes->get('status-pesanan/file/(:num)/(:segment)', 'Public\\StatusController::file/$1/$2');
 
 // Invoice
 $routes->get('invoice/(:segment)', 'Public\\InvoiceController::show/$1');
@@ -140,6 +157,14 @@ $routes->group('admin', ['filter' => 'role:admin'], static function ($routes) {
     $routes->post('laporan/pengeluaran', 'Admin\\LaporanController::storePengeluaran');
     $routes->post('laporan/pengeluaran/update/(:num)', 'Admin\\LaporanController::updatePengeluaran/$1');
     $routes->post('laporan/pengeluaran/delete/(:num)', 'Admin\\LaporanController::deletePengeluaran/$1');
+
+    // Social fetcher (admin only)
+    $routes->get('social', 'Admin\\SocialController::index');
+    $routes->post('social/fetch', 'Admin\\SocialController::fetch');
+    $routes->post('social/upsert', 'Admin\\SocialController::upsert');
+    $routes->get('social/status/(:num)', 'Admin\\SocialController::status/$1');
+    $routes->post('social/feature/(:num)', 'Admin\\SocialController::feature/$1');
+    $routes->get('social/cache', 'Admin\\SocialController::cache');
 
     // Users
     $routes->get('users', 'Admin\\UsersController::index');

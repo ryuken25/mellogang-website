@@ -1,0 +1,14 @@
+{
+  "name": "mellogang-social-fetcher",
+  "version": "1.0.0",
+  "description": "Playwright worker untuk fetch YouTube & Instagram ke cache social_post.",
+  "private": true,
+  "main": "worker.js",
+  "scripts": {
+    "fetch": "node worker.js",
+    "fetch:fixture": "node worker.js --fixture"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

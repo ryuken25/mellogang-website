@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" version="29.6.6">
+  <diagram id="KFdVqnSHkZswXhyJH9zr" name="Diagram Konteks">
+    <mxGraphModel dx="900" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Proses utama sistem (tengah) -->
+        <mxCell id="sys-1" parent="1" style="ellipse;aspect=fixed;strokeWidth=2;whiteSpace=wrap;fontSize=11;fontStyle=1;" value="0.&#xa;Sistem Informasi&#xa;Manajemen Pemesanan&#xa;Jasa Foto &amp; Video" vertex="1">
+          <mxGeometry height="160" width="160" x="500" y="330" as="geometry" />
+        </mxCell>
+
+        <!-- Entitas eksternal -->
+        <mxCell id="ext-pelanggan" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=11;fontStyle=1;" value="Pelanggan" vertex="1">
+          <mxGeometry height="54" width="160" x="60" y="390" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext-admin" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=11;fontStyle=1;" value="Admin" vertex="1">
+          <mxGeometry height="54" width="160" x="940" y="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext-editor" parent="1" style="whiteSpace=wrap;strokeWidth=2;fontSize=11;fontStyle=1;" value="Editor / Tim Produksi" vertex="1">
+          <mxGeometry height="54" width="160" x="940" y="570" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: PELANGGAN → SISTEM ===== -->
+
+        <!-- Registrasi & Login -->
+        <mxCell id="e-pel-1" edge="1" parent="1" source="ext-pelanggan" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" value="Data registrasi dan login">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="310" y="404" />
+              <mxPoint x="310" y="362" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Data Pemesanan -->
+        <mxCell id="e-pel-2" edge="1" parent="1" source="ext-pelanggan" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.45;exitDx=0;exitDy=0;entryX=0;entryY=0.38;entryDx=0;entryDy=0;" value="Data pemesanan jasa">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="350" y="419" />
+              <mxPoint x="350" y="391" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Upload Pembayaran -->
+        <mxCell id="e-pel-3" edge="1" parent="1" source="ext-pelanggan" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.65;exitDx=0;exitDy=0;entryX=0;entryY=0.55;entryDx=0;entryDy=0;" value="Bukti pembayaran (DP/lunas)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="370" y="430" />
+              <mxPoint x="370" y="419" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Permintaan Revisi -->
+        <mxCell id="e-pel-4" edge="1" parent="1" source="ext-pelanggan" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.82;exitDx=0;exitDy=0;entryX=0;entryY=0.72;entryDx=0;entryDy=0;" value="Permintaan revisi hasil">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="444" />
+              <mxPoint x="390" y="447" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Konfirmasi serah terima -->
+        <mxCell id="e-pel-5" edge="1" parent="1" source="ext-pelanggan" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.95;exitDx=0;exitDy=0;entryX=0;entryY=0.88;entryDx=0;entryDy=0;" value="Konfirmasi pesanan sesuai">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="400" y="457" />
+              <mxPoint x="400" y="477" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: SISTEM → PELANGGAN ===== -->
+
+        <!-- Katalog, invoice, status -->
+        <mxCell id="e-sys-pel-1" edge="1" parent="1" source="sys-1" target="ext-pelanggan" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.62;exitDx=0;exitDy=0;entryX=1;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" value="Katalog paket, status pesanan, invoice">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="429" />
+              <mxPoint x="430" y="407" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Notifikasi pembatalan otomatis -->
+        <mxCell id="e-sys-pel-2" edge="1" parent="1" source="sys-1" target="ext-pelanggan" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.78;exitDx=0;exitDy=0;entryX=1;entryY=0.55;entryDx=0;entryDy=0;" value="Info ketersediaan tanggal &amp; batas bayar">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="455" />
+              <mxPoint x="420" y="432" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- File hasil / progres -->
+        <mxCell id="e-sys-pel-3" edge="1" parent="1" source="sys-1" target="ext-pelanggan" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.92;exitDx=0;exitDy=0;entryX=1;entryY=0.78;entryDx=0;entryDy=0;" value="Progres editing &amp; file hasil (lunas)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="410" y="476" />
+              <mxPoint x="410" y="455" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: ADMIN → SISTEM ===== -->
+
+        <!-- Kelola paket & portofolio -->
+        <mxCell id="e-adm-1" edge="1" parent="1" source="ext-admin" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.2;exitDx=0;exitDy=0;entryX=1;entryY=0.15;entryDx=0;entryDy=0;" value="Kelola data paket &amp; portofolio">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="830" y="211" />
+              <mxPoint x="830" y="354" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Verifikasi pembayaran -->
+        <mxCell id="e-adm-2" edge="1" parent="1" source="ext-admin" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.4;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" value="Verifikasi pembayaran &amp; kelola user">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="222" />
+              <mxPoint x="820" y="378" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Input jadwal produksi -->
+        <mxCell id="e-adm-3" edge="1" parent="1" source="ext-admin" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.6;exitDx=0;exitDy=0;entryX=1;entryY=0.45;entryDx=0;entryDy=0;" value="Input jadwal produksi &amp; assign editor">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="810" y="234" />
+              <mxPoint x="810" y="402" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Permintaan laporan -->
+        <mxCell id="e-adm-4" edge="1" parent="1" source="ext-admin" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.8;exitDx=0;exitDy=0;entryX=1;entryY=0.6;entryDx=0;entryDy=0;" value="Permintaan laporan &amp; input pengeluaran">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="245" />
+              <mxPoint x="800" y="426" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: SISTEM → ADMIN ===== -->
+
+        <!-- Dashboard & laporan -->
+        <mxCell id="e-sys-adm-1" edge="1" parent="1" source="sys-1" target="ext-admin" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.15;entryDx=0;entryDy=0;" value="Dashboard, laporan pemesanan &amp; pendapatan">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="372" />
+              <mxPoint x="790" y="208" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Data seluruh transaksi -->
+        <mxCell id="e-sys-adm-2" edge="1" parent="1" source="sys-1" target="ext-admin" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.4;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" value="Data seluruh pemesanan &amp; pembayaran">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="396" />
+              <mxPoint x="780" y="222" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Status jadwal produksi ke admin -->
+        <mxCell id="e-sys-adm-3" edge="1" parent="1" source="sys-1" target="ext-admin" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.55;exitDx=0;exitDy=0;entryX=0;entryY=0.65;entryDx=0;entryDy=0;" value="Info progres editing &amp; status produksi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="770" y="419" />
+              <mxPoint x="770" y="235" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: EDITOR → SISTEM ===== -->
+
+        <!-- Update progres editing -->
+        <mxCell id="e-edt-1" edge="1" parent="1" source="ext-editor" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.3;exitDx=0;exitDy=0;entryX=1;entryY=0.7;entryDx=0;entryDy=0;" value="Update progres &amp; status produksi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="820" y="586" />
+              <mxPoint x="820" y="444" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Konfirmasi revisi dari editor -->
+        <mxCell id="e-edt-2" edge="1" parent="1" source="ext-editor" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.6;exitDx=0;exitDy=0;entryX=1;entryY=0.85;entryDx=0;entryDy=0;" value="Konfirmasi penerimaan &amp; selesai revisi">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="810" y="602" />
+              <mxPoint x="810" y="467" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Upload file progres -->
+        <mxCell id="e-edt-3" edge="1" parent="1" source="ext-editor" target="sys-1" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=0;exitY=0.85;exitDx=0;exitDy=0;entryX=1;entryY=0.97;entryDx=0;entryDy=0;" value="Upload file preview hasil editing">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="619" />
+              <mxPoint x="800" y="490" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ===== ALIRAN DATA: SISTEM → EDITOR ===== -->
+
+        <!-- Daftar tugas editing -->
+        <mxCell id="e-sys-edt-1" edge="1" parent="1" source="sys-1" target="ext-editor" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.72;exitDx=0;exitDy=0;entryX=0;entryY=0.2;entryDx=0;entryDy=0;" value="Daftar tugas editing &amp; notifikasi pop-up">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="780" y="445" />
+              <mxPoint x="780" y="581" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Detail jadwal produksi ke editor -->
+        <mxCell id="e-sys-edt-2" edge="1" parent="1" source="sys-1" target="ext-editor" style="startArrow=none;endArrow=block;rounded=0;fontSize=10;startSize=8;endSize=8;edgeStyle=orthogonalEdgeStyle;exitX=1;exitY=0.87;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" value="Detail jadwal, catatan revisi pelanggan">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="469" />
+              <mxPoint x="790" y="597" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

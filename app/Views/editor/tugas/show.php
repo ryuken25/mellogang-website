@@ -30,6 +30,18 @@
     </div>
     <div><b>Editing:</b> <?= esc($job['tanggal_mulai_editing'] ?? '-') ?> → <?= esc($job['tanggal_selesai_editing'] ?? '-') ?></div>
 
+    <?php if (!empty($job['link_hasil'])): ?>
+      <div style="margin-top:8px;">
+        <b>Link Hasil (Drive):</b>
+        <a class="link" target="_blank" href="<?= esc($job['link_hasil']) ?>"><?= esc($job['link_hasil']) ?></a>
+        <?php if (!empty($job['link_hasil_terkirim_at'])): ?>
+          <small class="muted" style="display:block;">
+            Email "hasil siap" sudah pernah dikirim: <?= esc($job['link_hasil_terkirim_at']) ?>
+          </small>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
     <?php if (!empty($job['catatan_pelanggan'])): ?>
       <div style="margin-top:10px;">
         <b>Catatan Pelanggan:</b><br>
@@ -113,6 +125,14 @@
             <div class="label">URL Preview (opsional)</div>
             <input class="input" name="url_preview" placeholder="https://drive.google.com/...">
             <small class="muted">URL akan masuk ke <b>catatan admin</b> (untuk ditampilkan di status pesanan saat lunas).</small>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="label">Link Hasil Google Drive (untuk email "hasil siap" ke pelanggan)</div>
+            <input class="input" type="url" name="link_hasil" value="<?= esc($job['link_hasil'] ?? '') ?>" placeholder="https://drive.google.com/...">
+            <small class="muted">Pastikan sharing Drive diset ke <b>"Siapa saja dengan link — Pelihat"</b>. Email hanya terkirim kalau link ini diisi / diganti.</small>
           </div>
         </div>
 

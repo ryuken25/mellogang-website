@@ -20,7 +20,7 @@
             <?php foreach ($paket as $p): ?>
               <?php $pid = (int)$p['id_paket']; ?>
               <option value="<?= $pid ?>" <?= ($selectedId === $pid) ? 'selected' : '' ?>>
-                <?= esc($p['nama_paket']) ?> — Rp <?= number_format((int)$p['harga'],0,',','.') ?>
+                <?= esc($p['nama_paket']) ?> — Rp <?= number_format((int)$p['harga'],0,',','.') ?> (Durasi: <?= esc($p['durasi_jam'] ?? 8) ?> Jam)
               </option>
             <?php endforeach; ?>
           </select>
@@ -38,6 +38,7 @@
             name="tanggal_acara"
             id="tanggal_acara"
             value="<?= esc(old('tanggal_acara') ?? '') ?>"
+            min="<?= date('Y-m-d') ?>"
             required
             autocomplete="off"
           >
@@ -85,10 +86,12 @@
     margin-left:8px;
     border:1px solid #e5e7eb;
     background:#f3f4f6;
+    color:#6b7280;
+    font-weight:600;
   }
-  .avail--green{ background:#dcfce7; border-color:#86efac; }
-  .avail--yellow{ background:#fef9c3; border-color:#fde047; }
-  .avail--red{ background:#fee2e2; border-color:#fca5a5; }
+  .avail--green{ background:#dcfce7; border-color:#86efac; color:#166534; }
+  .avail--yellow{ background:#fef9c3; border-color:#fde047; color:#854d0e; }
+  .avail--red{ background:#fee2e2; border-color:#fca5a5; color:#991b1b; }
 
   /* warna input tanggal ikut availability */
   .availInput--green{ border-color:#86efac !important; box-shadow:0 0 0 3px rgba(134,239,172,.25); }

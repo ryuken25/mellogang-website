@@ -37,6 +37,10 @@ class CreatePemesananTable extends Migration
                 'type' => 'DATE',
                 'null' => true,
             ],
+            'jam_mulai_acara' => [ // ✅ tambahan sesuai tabel 4.6
+                'type' => 'TIME',
+                'null' => true,
+            ],
             'lokasi_acara' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 150,
@@ -66,10 +70,14 @@ class CreatePemesananTable extends Migration
         $this->forge->addKey('id_user');
         $this->forge->addKey('id_paket');
 
+        // ✅ Foreign Key ke user & paket
+        $this->forge->addForeignKey('id_user', 'user', 'id_user', 'RESTRICT', 'CASCADE');
+        $this->forge->addForeignKey('id_paket', 'paket', 'id_paket', 'RESTRICT', 'CASCADE');
+
         $this->forge->createTable('pemesanan', true, [
-            'ENGINE'  => 'InnoDB',
-            'DEFAULT CHARSET' => 'utf8mb4',
-            'COLLATE' => 'utf8mb4_unicode_ci',
+            'ENGINE'         => 'InnoDB',
+            'DEFAULT CHARSET'=> 'utf8mb4',
+            'COLLATE'        => 'utf8mb4_unicode_ci',
         ]);
     }
 

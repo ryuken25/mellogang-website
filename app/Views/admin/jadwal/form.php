@@ -43,6 +43,7 @@
                 <?= ($selectedPemesanan === $idpm) ? 'selected' : '' ?>
                 data-tanggal-acara="<?= esc($tglAcara) ?>"
                 data-jam-mulai="<?= esc($jamMulai) ?>"
+                data-durasi="<?= (int)($pm['durasi_jam'] ?? 8) ?>"
               >
                 <?= esc($pm['kode_pemesanan'] ?? ('#'.$idpm)) ?>
               </option>
@@ -147,6 +148,7 @@
   const pemesananSel = document.getElementById('id_pemesanan');
   const tglInput = document.getElementById('tanggal_shooting');
   const jamMulai = document.getElementById('jam_mulai_shooting');
+  const jamSelesai = document.getElementById('jam_selesai_shooting');
   const badge = document.getElementById('availBadge');
 
   function setBadge(remaining, booked, capacity){
@@ -194,11 +196,48 @@
     refreshAvailability();
   }
 
+  function updateJamSelesai() {
+    if (!jamMulai.value) return;
+    
+    // jamMulai.value is usually "HH:MM" format
+    let parts = jamMulai.value.split(':');
+    if (parts.length >= 2) {
+      let h = parseInt(parts[0], 10);
+      let m = parseInt(parts[1], 10);
+      
+      // Ambil durasi dari pemesanan yang dipilih, default 8 jam
+      let durasi = 8;
+      const opt = pemesananSel.options[pemesananSel.selectedIndex];
+      if (opt && opt.getAttribute('data-durasi')) {
+         let pDurasi = parseInt(opt.getAttribute('data-durasi'), 10);
+         if (!isNaN(pDurasi) && pDurasi > 0) durasi = pDurasi;
+      }
+      
+      h += durasi;
+      
+      // Handle overflow past 24 hours
+      if (h >= 24) {
+        h -= 24;
+      }
+      
+      // format logic
+      const hStr = h < 10 ? '0' + h : '' + h;
+      const mStr = m < 10 ? '0' + m : '' + m;
+      jamSelesai.value = hStr + ':' + mStr;
+    }
+  }
+
   if (pemesananSel) pemesananSel.addEventListener('change', autoFillFromOrder);
   if (tglInput) tglInput.addEventListener('change', refreshAvailability);
+  if (jamMulai) jamMulai.addEventListener('change', updateJamSelesai);
 
   autoFillFromOrder();
   refreshAvailability();
+  
+  // Jika sedang edit, dan jam selesai kosong tapi jam mulai ada, auto fill
+  if (!jamSelesai.value && jamMulai.value) {
+      updateJamSelesai();
+  }
 })();
 </script>
 

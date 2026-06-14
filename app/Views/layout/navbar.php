@@ -22,11 +22,13 @@ $avatarUrl  = site_url('profile/avatar'); // endpoint baru
     </a>
 
     <nav class="nav">
-      <a class="<?= ($path === '' ? 'active' : '') ?>" href="<?= site_url('/') ?>">Beranda</a>
-      <a class="<?= (str_starts_with($path, 'katalog') ? 'active' : '') ?>" href="<?= site_url('/katalog') ?>">Paket</a>
-      <a class="<?= (str_starts_with($path, 'portofolio') ? 'active' : '') ?>" href="<?= site_url('/portofolio') ?>">Portofolio</a>
-      <a class="<?= (str_starts_with($path, 'status-pesanan') ? 'active' : '') ?>" href="<?= site_url('/status-pesanan') ?>">Status Pesanan</a>
-      <a class="<?= (str_starts_with($path, 'kontak') ? 'active' : '') ?>" href="<?= site_url('/kontak') ?>">Kontak</a>
+      <?php if ($role !== 'editor'): ?>
+        <a class="<?= ($path === '' ? 'active' : '') ?>" href="<?= site_url('/') ?>">Beranda</a>
+        <a class="<?= (str_starts_with($path, 'katalog') ? 'active' : '') ?>" href="<?= site_url('/katalog') ?>">Paket</a>
+        <a class="<?= (str_starts_with($path, 'portofolio') ? 'active' : '') ?>" href="<?= site_url('/portofolio') ?>">Portofolio</a>
+        <a class="<?= (str_starts_with($path, 'status-pesanan') ? 'active' : '') ?>" href="<?= site_url('/status-pesanan') ?>">Status Pesanan</a>
+        <a class="<?= (str_starts_with($path, 'kontak') ? 'active' : '') ?>" href="<?= site_url('/kontak') ?>">Kontak</a>
+      <?php endif; ?>
 
       <?php if ($loggedIn): ?>
 

@@ -54,16 +54,26 @@ class CreateJadwalProduksiTable extends Migration
                 'type' => 'TEXT',
                 'null' => true,
             ],
+            'revisi_count' => [ // ✅ tambahan sesuai tabel 4.8
+                'type'       => 'TINYINT',
+                'constraint' => 3,
+                'unsigned'   => true,
+                'default'    => 0,
+            ],
         ]);
 
         $this->forge->addKey('id_jadwal', true);
         $this->forge->addKey('id_pemesanan');
         $this->forge->addKey('id_editor');
 
+        // ✅ Foreign Key ke pemesanan & user(editor)
+        $this->forge->addForeignKey('id_pemesanan', 'pemesanan', 'id_pemesanan', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('id_editor', 'user', 'id_user', 'RESTRICT', 'CASCADE');
+
         $this->forge->createTable('jadwal_produksi', true, [
-            'ENGINE'  => 'InnoDB',
-            'DEFAULT CHARSET' => 'utf8mb4',
-            'COLLATE' => 'utf8mb4_unicode_ci',
+            'ENGINE'         => 'InnoDB',
+            'DEFAULT CHARSET'=> 'utf8mb4',
+            'COLLATE'        => 'utf8mb4_unicode_ci',
         ]);
     }
 

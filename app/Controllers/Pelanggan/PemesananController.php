@@ -45,7 +45,8 @@ class PemesananController extends BaseController
 
     /**
      * Endpoint availability pelanggan (2 fotografer per tanggal).
-     * Hitung dari jadwal_produksi.tanggal_shooting.
+     * Hitung dari pemesanan.tanggal_acara (bukan jadwal_produksi),
+     * dan jalankan lazy check pembatalan 2 jam sebelum query.
      */
     public function availability()
     {
@@ -61,8 +62,16 @@ class PemesananController extends BaseController
             ]);
         }
 
-        $booked = (int)$db->table('jadwal_produksi')
-            ->where('tanggal_shooting', $date)
+        // Lazy check: batalkan pesanan yang belum dibayar lebih dari 2 jam
+        $db->query(
+            "UPDATE pemesanan SET status_pemesanan = 'batal'
+             WHERE status_pemesanan = 'menunggu pembayaran'
+             AND tanggal_pemesanan <= DATE_SUB(NOW(), INTERVAL 2 HOUR)"
+        );
+
+        $booked = (int)$db->table('pemesanan')
+            ->where('tanggal_acara', $date)
+            ->whereNotIn('status_pemesanan', ['batal', 'ditolak'])
             ->countAllResults();
 
         $capacity = 2;
@@ -120,7 +129,7 @@ class PemesananController extends BaseController
             'kode_pemesanan' => $kode,
             'id_user' => $idUser,
             'id_paket' => $idPaket,
-            'tanggal_pemesanan' => date('Y-m-d H:i:s'),
+            'tanggal_pemesanan' => $db->query("SELECT NOW() as now")->getRow()->now,
             'tanggal_acara' => $tanggalAcara,
             'jam_mulai_acara' => $jamMulai,
             'lokasi_acara' => $this->request->getPost('lokasi_acara'),

@@ -19,12 +19,20 @@
       <div class="alert ok"><?= esc(session()->getFlashdata('success')) ?></div>
     <?php endif; ?>
 
+    <?php if (! empty($googleOn)): ?>
+      <a class="btn-google" href="<?= site_url('auth/google/redirect') ?>">
+        <span class="g">G</span>
+        <span>Lanjut dengan Google</span>
+      </a>
+      <div class="divider"><span>atau</span></div>
+    <?php endif; ?>
+
     <form class="form" method="post" action="<?= site_url('/login') ?>">
       <?= csrf_field() ?>
 
       <div>
         <div class="label">Email</div>
-        <input class="input" type="email" name="email" value="<?= old('email') ?>" placeholder="contoh@email.com">
+        <input class="input" type="email" name="email" value="<?= old('email') ?>" placeholder="contoh@email.com" autocomplete="email">
         <?php if ($validation->hasError('email')): ?>
           <div class="label" style="color:#b91c1c;"><?= esc($validation->getError('email')) ?></div>
         <?php endif; ?>
@@ -32,14 +40,10 @@
 
       <div>
         <div class="label">Kata sandi</div>
-        <input class="input" type="password" name="password" placeholder="••••••••">
+        <input class="input" type="password" name="password" placeholder="••••••••" autocomplete="current-password">
         <?php if ($validation->hasError('password')): ?>
           <div class="label" style="color:#b91c1c;"><?= esc($validation->getError('password')) ?></div>
         <?php endif; ?>
-      </div>
-
-      <div class="actions">
-        <a class="link" href="#">Lupa kata sandi?</a>
       </div>
 
       <button class="btn" type="submit">Masuk</button>

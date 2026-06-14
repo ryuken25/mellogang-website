@@ -147,7 +147,9 @@ class StatusController extends BaseController
 
         $canSesuai = false;
         if ($order && $loggedIn && $role === 'pelanggan' && $isOwner) {
-            if (!$delivered && $isFinalEditing) $canSesuai = true;
+            if (!$delivered && $isFinalEditing && !$revPending && !$revProcess) {
+                $canSesuai = true;
+            }
         }
 
         // invoice eligibility
@@ -165,6 +167,25 @@ class StatusController extends BaseController
         $adminUrlsAll = $this->extractUrls($adminNoteAll);
 
         $publicLog = $jadwal ? $this->stripUrls((string)($jadwal['catatan_produksi'] ?? '')) : '';
+
+        // Link hasil dari jadwal_produksi (kolom dedicated)
+        $linkHasil = $jadwal ? trim((string)($jadwal['link_hasil'] ?? '')) : '';
+        $linkHasilSentAt = $jadwal ? trim((string)($jadwal['link_hasil_terkirim_at'] ?? '')) : '';
+
+        // Extract preview files from directory
+        $previewFiles = [];
+        if ($jadwal) {
+            $idJadwal = (int)$jadwal['id_jadwal'];
+            $dir = WRITEPATH . 'uploads/progres/' . $idJadwal;
+            if (is_dir($dir)) {
+                foreach (scandir($dir) as $f) {
+                    if ($f === '.' || $f === '..') continue;
+                    $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
+                    if (!in_array($ext, ['jpg','jpeg','png','pdf'], true)) continue;
+                    $previewFiles[] = $f;
+                }
+            }
+        }
 
         $adminNote = $canSeeLinks ? $adminNoteAll : $this->stripUrls($adminNoteAll);
         $adminUrls = $canSeeLinks ? $adminUrlsAll : [];
@@ -254,10 +275,16 @@ class StatusController extends BaseController
             'canSesuai'   => $canSesuai,
             'delivered'   => $delivered,
 
-            'canSeeLinks' => $canSeeLinks,
-            'adminNote'   => $adminNote,
-            'adminUrls'   => $adminUrls,
-            'publicLog'   => $publicLog,
+            'canSeeLinks'       => $canSeeLinks,
+            'adminNote'         => $adminNote,
+            'adminUrls'         => $adminUrls,
+            'publicLog'         => $publicLog,
+            'linkHasil'         => $linkHasil,
+            'linkHasilSentAt'   => $linkHasilSentAt,
+            'previewFiles'      => $previewFiles,
+            'idJadwal'          => $jadwal ? $jadwal['id_jadwal'] : null,
+            'tanggalPemesanan'  => $order ? (string)($order['tanggal_pemesanan'] ?? '') : '',
+            'serverNow'         => $db->query("SELECT NOW() as now")->getRow()->now,
         ]);
     }
 
@@ -378,5 +405,68 @@ class StatusController extends BaseController
         return redirect()
             ->to(site_url('status-pesanan?kode=' . urlencode($order['kode_pemesanan'])))
             ->with('success', 'Terima kasih! Pesanan masuk tahap serah terima hasil.');
+    }
+
+    public function file($idJadwal, $filename)
+    {
+        $db = db_connect();
+
+        $job = $db->table('jadwal_produksi')
+            ->select('id_jadwal, id_pemesanan')
+            ->where('id_jadwal', (int)$idJadwal)
+            ->get()->getRowArray();
+
+        if (!$job) {
+            return redirect()->back()->with('error', 'Data tidak ditemukan.');
+        }
+
+        $order = $db->table('pemesanan')
+            ->select('id_user, status_pemesanan, total_biaya')
+            ->where('id_pemesanan', (int)$job['id_pemesanan'])
+            ->get()->getRowArray();
+
+        if (!$order) {
+            return redirect()->back()->with('error', 'Pesanan tidak ditemukan.');
+        }
+
+        // Cek pembayaran lunas
+        $payRows = $db->table('pembayaran')
+            ->selectSum('jumlah_bayar', 'total_valid')
+            ->where('id_pemesanan', (int)$job['id_pemesanan'])
+            ->where('LOWER(status_verifikasi)', 'valid')
+            ->get()->getRowArray();
+
+        $totalValid = (int)($payRows['total_valid'] ?? 0);
+        $totalBiaya = (int)($order['total_biaya'] ?? 0);
+        
+        $isLunas = ($totalBiaya > 0 && $totalValid >= $totalBiaya);
+
+        if (!$isLunas) {
+            return redirect()->back()->with('error', 'File preview hanya bisa dilihat jika pesanan sudah Lunas.');
+        }
+
+        $loggedIn = (bool) session()->get('logged_in');
+        $role     = (string) session()->get('role');
+        $idUser   = (int) session()->get('id_user');
+
+        $isOwner = ($loggedIn && $role === 'pelanggan' && (int)$order['id_user'] === $idUser);
+        $isAdminOrEditor = ($loggedIn && in_array($role, ['admin', 'editor']));
+
+        if (!$isOwner && !$isAdminOrEditor) {
+            return redirect()->back()->with('error', 'Akses ditolak.');
+        }
+
+        $safe = basename((string)$filename);
+        $path = WRITEPATH . 'uploads/progres/' . (int)$idJadwal . '/' . $safe;
+
+        if (!is_file($path)) {
+            return redirect()->back()->with('error', 'File tidak ditemukan.');
+        }
+
+        $mime = @mime_content_type($path) ?: 'application/octet-stream';
+        return $this->response
+            ->setContentType($mime)
+            ->setHeader('Content-Disposition', 'inline; filename="'.$safe.'"')
+            ->setBody(file_get_contents($path));
     }
 }

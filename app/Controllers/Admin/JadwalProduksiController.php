@@ -22,9 +22,10 @@ class JadwalProduksiController extends BaseController
         // Ambil order yang ada pembayaran VALID (DP atau pelunasan)
         // dan belum punya jadwal_produksi
         return $db->table('pemesanan p')
-            ->select('p.id_pemesanan, p.kode_pemesanan, p.tanggal_acara, p.jam_mulai_acara')
+            ->select('p.id_pemesanan, p.kode_pemesanan, p.tanggal_acara, p.jam_mulai_acara, pk.durasi_jam')
             ->join('pembayaran py', 'py.id_pemesanan = p.id_pemesanan AND LOWER(py.status_verifikasi) = "valid"', 'inner')
             ->join('jadwal_produksi j', 'j.id_pemesanan = p.id_pemesanan', 'left')
+            ->join('paket pk', 'pk.id_paket = p.id_paket', 'left')
             ->where('j.id_pemesanan', null)
             ->groupBy('p.id_pemesanan')
             ->orderBy('p.id_pemesanan', 'DESC')
@@ -84,8 +85,16 @@ class JadwalProduksiController extends BaseController
             ]);
         }
 
-        $booked = (int)$db->table('jadwal_produksi')
-            ->where('tanggal_shooting', $date)
+        // Lazy check: batalkan pesanan yang belum dibayar lebih dari 2 jam
+        $db->query(
+            "UPDATE pemesanan SET status_pemesanan = 'batal'
+             WHERE status_pemesanan = 'menunggu pembayaran'
+             AND tanggal_pemesanan <= DATE_SUB(NOW(), INTERVAL 2 HOUR)"
+        );
+
+        $booked = (int)$db->table('pemesanan')
+            ->where('tanggal_acara', $date)
+            ->whereNotIn('status_pemesanan', ['batal', 'ditolak'])
             ->countAllResults();
 
         $capacity = 2;
@@ -155,8 +164,9 @@ class JadwalProduksiController extends BaseController
 
         // untuk edit: tampilkan pemesanan yg dipakai + eligible lain
         $pemesanan = $this->getEligibleOrdersForCreate($db);
-        $current = $db->table('pemesanan')->select('id_pemesanan,kode_pemesanan,tanggal_acara,jam_mulai_acara')
-            ->where('id_pemesanan', (int)$row['id_pemesanan'])->get()->getRowArray();
+        $current = $db->table('pemesanan p')->select('p.id_pemesanan,p.kode_pemesanan,p.tanggal_acara,p.jam_mulai_acara,pk.durasi_jam')
+            ->join('paket pk', 'pk.id_paket = p.id_paket', 'left')
+            ->where('p.id_pemesanan', (int)$row['id_pemesanan'])->get()->getRowArray();
 
         if ($current) {
             $exists = false;
@@ -203,7 +213,7 @@ class JadwalProduksiController extends BaseController
             if ($oldStatus !== 'shooting') {
                 return redirect()->back()->with('error', 'Tidak bisa masuk cut-to-cut sebelum status shooting.');
             }
-            $jamSelesai = $old['jam_selesai_shooting'] ?? null;
+            $jamSelesai = $this->request->getPost('jam_selesai_shooting') ?: ($old['jam_selesai_shooting'] ?? null);
             if (empty($jamSelesai)) {
                 return redirect()->back()->with('error', 'Isi jam selesai shooting dulu sebelum mulai editing.');
             }

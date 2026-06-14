@@ -65,9 +65,14 @@
                     <td><span class="pill"><?= esc($o['status_pemesanan'] ?? '-') ?></span></td>
                     <td>Rp <?= number_format((int)($o['total_biaya'] ?? 0), 0, ',', '.') ?></td>
                     <td>
-                      <a class="link" href="<?= site_url('pelanggan/pembayaran/upload/' . (int)$o['id_pemesanan']) ?>">
-                        Pembayaran
-                      </a>
+                      <?php $st = strtolower(trim($o['status_pemesanan'] ?? '')); ?>
+                      <?php if (in_array($st, ['batal', 'ditolak'], true)): ?>
+                        <span class="muted" style="font-size:0.82rem;">—</span>
+                      <?php else: ?>
+                        <a class="link" href="<?= site_url('pelanggan/pembayaran/upload/' . (int)$o['id_pemesanan']) ?>">
+                          Pembayaran
+                        </a>
+                      <?php endif; ?>
                     </td>
                   </tr>
                 <?php endforeach; ?>
@@ -91,6 +96,57 @@
           <div class="infoRow"><span>Tanggal acara</span><b><?= esc($order['tanggal_acara'] ?? '-') ?></b></div>
           <div class="infoRow"><span>Status saat ini</span><b><span class="pill"><?= esc($order['status_pemesanan'] ?? '-') ?></span></b></div>
         </div>
+
+        <?php if (($order['status_pemesanan'] ?? '') === 'menunggu pembayaran' && !empty($tanggalPemesanan)): ?>
+          <?php
+            $deadlineTs = strtotime($tanggalPemesanan) + (2 * 60 * 60);
+            $deadlineIso = date('Y-m-d\TH:i:s', $deadlineTs);
+            $serverNowIso = date('Y-m-d\TH:i:s', strtotime($serverNow ?? 'now'));
+          ?>
+          <div id="countdownBox" style="margin-top:12px;padding:12px 14px;border-radius:12px;background:#fff7ed;border:1px solid #fed7aa;">
+            <div style="font-size:0.82rem;color:#92400e;margin-bottom:4px;font-weight:600;">⏳ Batas waktu pembayaran</div>
+            <div id="countdownTimer" style="font-size:1.35rem;font-weight:700;color:#c2410c;letter-spacing:1px;">--:--:--</div>
+            <div style="font-size:0.78rem;color:#b45309;margin-top:4px;">Pesanan otomatis dibatalkan jika belum ada pembayaran dalam 2 jam sejak pemesanan.</div>
+          </div>
+          <script>
+            (function () {
+              var deadline = new Date("<?= $deadlineIso ?>").getTime();
+              var serverNow = new Date("<?= $serverNowIso ?>").getTime();
+              var clientNow = Date.now();
+              var offset = serverNow - clientNow; // server - client offset
+              var box   = document.getElementById('countdownBox');
+              var timer = document.getElementById('countdownTimer');
+
+              function tick() {
+                var now  = Date.now() + offset; // use server-corrected time
+                var diff = deadline - now;
+
+                if (diff <= 0) {
+                  timer.textContent = '00:00:00';
+                  box.style.background = '#fef2f2';
+                  box.style.borderColor = '#fecaca';
+                  timer.style.color = '#b91c1c';
+                  box.querySelector('div:first-child').textContent = '❌ Waktu pembayaran habis';
+                  box.querySelector('div:last-child').textContent = 'Pesanan ini kemungkinan sudah dibatalkan secara otomatis.';
+                  return;
+                }
+
+                var h = Math.floor(diff / 3600000);
+                var m = Math.floor((diff % 3600000) / 60000);
+                var s = Math.floor((diff % 60000) / 1000);
+
+                timer.textContent =
+                  String(h).padStart(2, '0') + ':' +
+                  String(m).padStart(2, '0') + ':' +
+                  String(s).padStart(2, '0');
+
+                setTimeout(tick, 1000);
+              }
+
+              tick();
+            })();
+          </script>
+        <?php endif; ?>
 
         <div style="height:10px;"></div>
 
@@ -203,8 +259,37 @@
           <div class="miniTitle">Link / Pesan Editor</div>
 
           <?php if (!empty($canSeeLinks)): ?>
+
+            <?php if (!empty($linkHasil)): ?>
+              <div style="margin-top:10px;">
+                <a class="btnPrimary" target="_blank" rel="noopener" href="<?= esc($linkHasil) ?>">
+                  ⬇ Unduh Hasil
+                </a>
+                <?php if (!empty($linkHasilSentAt)): ?>
+                  <small class="muted" style="display:block;margin-top:6px;">
+                    Email notifikasi sudah pernah dikirim: <?= esc($linkHasilSentAt) ?>
+                  </small>
+                <?php endif; ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if (!empty($previewFiles) && isset($idJadwal)): ?>
+              <div style="margin-top:12px;">
+                <strong style="display:block;margin-bottom:4px;font-size:0.9rem;">File Preview:</strong>
+                <?php foreach ($previewFiles as $pf): ?>
+                  <div>
+                    <a class="link" target="_blank" href="<?= site_url('status-pesanan/file/' . $idJadwal . '/' . urlencode($pf)) ?>">
+                      <svg style="width:16px;height:16px;vertical-align:middle;margin-right:4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                      <?= esc($pf) ?>
+                    </a>
+                  </div>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+
             <?php if (!empty($adminUrls)): ?>
-              <div style="margin-top:8px;">
+              <div style="margin-top:12px;">
+                <strong style="display:block;margin-bottom:4px;font-size:0.9rem;">Link External:</strong>
                 <?php foreach ($adminUrls as $u): ?>
                   <div><a class="link" target="_blank" href="<?= esc($u) ?>"><?= esc($u) ?></a></div>
                 <?php endforeach; ?>
@@ -217,7 +302,7 @@
               </div>
             <?php endif; ?>
 
-            <?php if (empty($adminUrls) && empty(trim((string)$adminNote))): ?>
+            <?php if (empty($linkHasil) && empty($adminUrls) && empty(trim((string)$adminNote)) && empty($previewFiles)): ?>
               <small class="muted">Belum ada link/pesan dari editor.</small>
             <?php endif; ?>
           <?php else: ?>

@@ -39,8 +39,6 @@ $RECYCLE.BIN/
 #-------------------------
 # Environment Files
 #-------------------------
-# These should never be under version control,
-# as it poses a security risk.
 .env
 .vagrant
 Vagrantfile
@@ -64,6 +62,16 @@ writable/uploads/*
 writable/debugbar/*
 !writable/debugbar/index.html
 
+# Social fetcher artifacts & secrets
+writable/secure/
+!writable/secure/.gitkeep
+writable/email-spool/
+!writable/email-spool/.gitkeep
+writable/social-debug/
+!writable/social-debug/.gitkeep
+writable/invoice-tmp/
+!writable/invoice-tmp/.gitkeep
+
 php_errors.log
 
 #-------------------------
@@ -78,6 +86,10 @@ user_guide_src/cilexer/pycilexer.egg-info/*
 # Test Files
 #-------------------------
 tests/coverage*
+build/
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Don't save phpunit under version control.
 phpunit
@@ -86,6 +98,17 @@ phpunit
 # Composer
 #-------------------------
 vendor/
+
+#-------------------------
+# Node / Playwright
+#-------------------------
+node_modules/
+tools/social-fetcher/node_modules/
+tools/social-fetcher/package-lock.json
+tests/e2e/node_modules/
+tests/e2e/package-lock.json
+tests/e2e/playwright-report/
+tests/e2e/test-results/
 
 #-------------------------
 # IDE / Development Files
@@ -114,7 +137,7 @@ _modules/*
 # Sublime Text
 *.tmlanguage.cache
 *.tmPreferences.cache
-*.stTheme.cache
+*.tmTheme.cache
 *.sublime-workspace
 *.sublime-project
 .phpintel

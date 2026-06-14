@@ -3,6 +3,9 @@
 namespace App\Controllers\Editor;
 
 use App\Controllers\BaseController;
+use App\Libraries\Mailer;
+use App\Libraries\ResultNotifier;
+use App\Support\Status;
 
 class TugasController extends BaseController
 {
@@ -13,29 +16,21 @@ class TugasController extends BaseController
         return null;
     }
 
-    private function norm($s): string
+    private function allowedNext(string $current): array
     {
-        return strtolower(trim((string)$s));
+        return Status::prodTransitions()[$current] ?? [];
     }
 
     private function isEditingStatus(string $status): bool
     {
-        $status = $this->norm($status);
-        return in_array($status, ['cut-to-cut', 'finishing', 'done', 'revisi', 'revisi selesai'], true);
+        $status = strtolower(trim($status));
+        return in_array($status, [
+            Status::PROD_CUT_TO_CUT, Status::PROD_FINISHING, Status::PROD_DONE,
+            Status::PROD_REVISI, Status::PROD_REVISI_SELESAI,
+        ], true);
     }
 
-    private function allowedNext(string $current): array
-    {
-        $c = $this->norm($current);
-
-        if ($c === 'cut-to-cut') return ['finishing'];
-        if ($c === 'finishing')  return ['done'];
-        if ($c === 'revisi')     return ['revisi selesai'];
-
-        return [];
-    }
-
-    // ✅ FIX regex
+    /** hitung jumlah "REVISI: ..." di catatan_pelanggan */
     private function countRevisi(string $catatanPelanggan): int
     {
         if (trim($catatanPelanggan) === '') return 0;
@@ -57,10 +52,12 @@ class TugasController extends BaseController
             ->get()->getResultArray();
 
         foreach ($payRows as $p) {
-            $st = $this->norm($p['status_verifikasi'] ?? '');
-            if ($st !== 'valid') continue;
+            $st = strtolower((string)($p['status_verifikasi'] ?? ''));
+            if ($st !== Status::VERIF_VALID) continue;
             $totalValid += (int)($p['jumlah_bayar'] ?? 0);
-            if ($this->norm($p['jenis_pembayaran'] ?? '') === 'dp') $dpValid += (int)($p['jumlah_bayar'] ?? 0);
+            if (strtolower((string)($p['jenis_pembayaran'] ?? '')) === 'dp') {
+                $dpValid += (int)($p['jumlah_bayar'] ?? 0);
+            }
         }
 
         $isLunas = ($totalOrder > 0 && $totalValid >= $totalOrder);
@@ -72,21 +69,21 @@ class TugasController extends BaseController
             'dpValid'    => $dpValid,
             'isLunas'    => $isLunas,
             'hasDp'      => $hasDp,
-            'statusNow'  => $this->norm($order['status_pemesanan'] ?? ''),
+            'statusNow'  => strtolower((string)($order['status_pemesanan'] ?? '')),
         ];
     }
 
     private function restoreOrderStatusAfterRevisi($db, int $idPemesanan): string
     {
         $snap = $this->paymentSnapshot($db, $idPemesanan);
+        $now = $snap['statusNow'];
 
-        if (str_contains($snap['statusNow'], 'serah terima') || $snap['statusNow'] === 'selesai') {
-            return $snap['statusNow'];
+        if (str_contains($now, 'serah terima') || $now === 'selesai') {
+            return $now;
         }
-
-        if ($snap['isLunas']) return 'lunas';
-        if ($snap['hasDp']) return 'menunggu pelunasan';
-        return 'menunggu pembayaran';
+        if ($snap['isLunas']) return Status::ORDER_LUNAS;
+        if ($snap['hasDp']) return Status::ORDER_MENUNGGU_PELUNASAN;
+        return Status::ORDER_MENUNGGU_PEMBAYARAN;
     }
 
     public function index()
@@ -95,7 +92,7 @@ class TugasController extends BaseController
 
         $db = db_connect();
         $idEditor = (int) session()->get('id_user');
-        $status = $this->norm($this->request->getGet('status'));
+        $status = strtolower(trim((string) $this->request->getGet('status')));
 
         $q = $db->table('jadwal_produksi j')
             ->select("
@@ -111,15 +108,15 @@ class TugasController extends BaseController
             ->orderBy('j.id_jadwal', 'DESC');
 
         if ($status !== '') {
-            $q->where("LOWER(j.status_produksi) = '{$status}'", null, false);
+            $q->where('j.status_produksi', $status);
         }
 
         $rows = $q->get()->getResultArray();
 
         return view('editor/tugas/index', [
             'title' => 'Tugas Editor',
-            'rows' => $rows,
-            'status' => $status,
+            'rows'  => $rows,
+            'status'=> $status,
         ]);
     }
 
@@ -148,13 +145,13 @@ class TugasController extends BaseController
             return redirect()->to(site_url('editor/tugas'))->with('error', 'Tugas tidak ditemukan / bukan milik kamu.');
         }
 
-        $statusNow = $this->norm($job['status_produksi'] ?? '');
-        $statusPesanan = $this->norm($job['status_pemesanan'] ?? '');
+        $statusNow = strtolower((string)($job['status_produksi'] ?? ''));
+        $statusPesanan = strtolower((string)($job['status_pemesanan'] ?? ''));
 
-        $revPending = ($statusPesanan === 'revisi pelanggan');
-        $revProcess = ($statusPesanan === 'revisi diproses');
+        $revPending = ($statusPesanan === Status::ORDER_REVISI_PELANGGAN);
+        $revProcess = ($statusPesanan === Status::ORDER_REVISI_DIPROSES);
 
-        $canAcceptReject = $revPending && in_array($statusNow, ['done', 'revisi selesai'], true);
+        $canAcceptReject = $revPending && in_array($statusNow, [Status::PROD_DONE, Status::PROD_REVISI_SELESAI], true);
 
         $next = $this->allowedNext($statusNow);
         $canEdit = !empty($next);
@@ -190,7 +187,6 @@ class TugasController extends BaseController
         $db = db_connect();
         $idEditor = (int) session()->get('id_user');
 
-        // ✅ FIX: ambil j.catatan_produksi juga
         $job = $db->table('jadwal_produksi j')
             ->select('j.id_jadwal,j.id_editor,j.id_pemesanan,j.status_produksi,j.catatan_produksi, pm.status_pemesanan, pm.catatan_pelanggan')
             ->join('pemesanan pm', 'pm.id_pemesanan = j.id_pemesanan', 'left')
@@ -201,13 +197,13 @@ class TugasController extends BaseController
             return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
-        $statusNow = $this->norm($job['status_produksi'] ?? '');
-        $statusPesanan = $this->norm($job['status_pemesanan'] ?? '');
+        $statusNow = strtolower((string)($job['status_produksi'] ?? ''));
+        $statusPesanan = strtolower((string)($job['status_pemesanan'] ?? ''));
 
-        if ($statusPesanan !== 'revisi pelanggan') {
+        if ($statusPesanan !== Status::ORDER_REVISI_PELANGGAN) {
             return redirect()->back()->with('error', 'Tidak ada request revisi yang pending.');
         }
-        if (!in_array($statusNow, ['done','revisi selesai'], true)) {
+        if (!in_array($statusNow, [Status::PROD_DONE, Status::PROD_REVISI_SELESAI], true)) {
             return redirect()->back()->with('error', 'Revisi hanya bisa diterima saat status produksi DONE / REVISI SELESAI.');
         }
 
@@ -218,12 +214,12 @@ class TugasController extends BaseController
         $newLog = trim($oldLog . "\n" . $line);
 
         $db->table('jadwal_produksi')->where('id_jadwal', (int)$idJadwal)->update([
-            'status_produksi'  => 'revisi',
+            'status_produksi'  => Status::PROD_REVISI,
             'catatan_produksi' => $newLog,
         ]);
 
         $db->table('pemesanan')->where('id_pemesanan', (int)$job['id_pemesanan'])->update([
-            'status_pemesanan' => 'revisi diproses',
+            'status_pemesanan' => Status::ORDER_REVISI_DIPROSES,
         ]);
 
         return redirect()->to(site_url('editor/tugas/'.$idJadwal))->with('success', 'Revisi diterima. Status produksi berubah ke REVISI.');
@@ -246,8 +242,8 @@ class TugasController extends BaseController
             return redirect()->back()->with('error', 'Akses ditolak.');
         }
 
-        $statusPesanan = $this->norm($job['status_pemesanan'] ?? '');
-        if ($statusPesanan !== 'revisi pelanggan') {
+        $statusPesanan = strtolower((string)($job['status_pemesanan'] ?? ''));
+        if ($statusPesanan !== Status::ORDER_REVISI_PELANGGAN) {
             return redirect()->back()->with('error', 'Tidak ada request revisi yang pending.');
         }
 
@@ -286,20 +282,27 @@ class TugasController extends BaseController
             return redirect()->to(site_url('editor/tugas'))->with('error', 'Tugas tidak ditemukan / bukan milik kamu.');
         }
 
-        $statusNow = $this->norm($job['status_produksi'] ?? '');
+        $statusNow = strtolower((string)($job['status_produksi'] ?? ''));
         if (!$this->isEditingStatus($statusNow)) {
-            return redirect()->back()->with('error', 'Belum masuk tahap editing. Admin harus ubah status produksi ke "cut-to-cut" dulu.');
+            return redirect()->back()->with('error', 'Belum masuk tahap editing. Admin harus ubah status produksi ke "cut_to_cut" dulu.');
         }
 
-        $tahap = $this->norm($this->request->getPost('tahap'));
-        $catatan = trim((string)$this->request->getPost('catatan'));
-        $url = trim((string)$this->request->getPost('url_preview'));
+        $tahap   = strtolower(trim((string) $this->request->getPost('tahap')));
+        $catatan = trim((string) $this->request->getPost('catatan'));
+        $url     = trim((string) $this->request->getPost('url_preview'));
+        $linkHasil = trim((string) $this->request->getPost('link_hasil'));
 
         $allowed = $this->allowedNext($statusNow);
         if (!in_array($tahap, $allowed, true)) {
             return redirect()->back()->withInput()->with('error', 'Transisi status tidak valid.');
         }
 
+        // Validasi link_hasil kalau diisi
+        if ($linkHasil !== '' && ! \App\Libraries\ResultNotifier::isValidDriveLink($linkHasil)) {
+            return redirect()->back()->withInput()->with('error', 'Link hasil harus URL Google Drive / Google Docs yang valid.');
+        }
+
+        // Upload file preview (JPG/PNG/PDF max 10MB)
         $savedFile = null;
         $file = $this->request->getFile('file_preview');
         if ($file && $file->isValid() && !$file->hasMoved()) {
@@ -314,7 +317,7 @@ class TugasController extends BaseController
             }
 
             $dir = WRITEPATH . 'uploads/progres/' . (int)$idJadwal;
-            if (!is_dir($dir)) mkdir($dir, 0775, true);
+            if (!is_dir($dir)) @mkdir($dir, 0775, true);
 
             $savedFile = 'preview_' . $tahap . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
             $file->move($dir, $savedFile);
@@ -329,27 +332,36 @@ class TugasController extends BaseController
         $oldCat = (string)($job['catatan_produksi'] ?? '');
         $newCat = trim($oldCat . "\n" . $logLine);
 
-        $db->table('jadwal_produksi')->where('id_jadwal', (int)$idJadwal)->update([
+        $update = [
             'status_produksi'  => $tahap,
             'catatan_produksi' => $newCat,
-        ]);
+        ];
 
-        if ($url !== '') {
-            $ord = $db->table('pemesanan')
-                ->select('catatan_admin')
-                ->where('id_pemesanan', (int)$job['id_pemesanan'])
-                ->get()->getRowArray();
-
-            $oldAdmin = trim((string)($ord['catatan_admin'] ?? ''));
-            $lineAdmin = "[{$now}] LINK EDITOR ({$tahap}): {$url}";
-            $newAdmin = trim($oldAdmin . "\n" . $lineAdmin);
-
-            $db->table('pemesanan')->where('id_pemesanan', (int)$job['id_pemesanan'])->update([
-                'catatan_admin' => $newAdmin,
-            ]);
+        // link_hasil
+        if ($linkHasil !== '') {
+            $update['link_hasil'] = $linkHasil;
         }
 
-        if ($statusNow === 'revisi' && $tahap === 'revisi selesai') {
+        $db->table('jadwal_produksi')->where('id_jadwal', (int)$idJadwal)->update($update);
+
+        // Trigger email "hasil siap" idempotent kalau link ada
+        if ($linkHasil !== '' || ! empty($job['link_hasil'])) {
+            $reloaded = $db->table('jadwal_produksi')->where('id_jadwal', (int)$idJadwal)->get()->getRowArray();
+            $order    = $db->table('pemesanan p')
+                ->select('p.*, u.email, u.nama_lengkap, pk.nama_paket')
+                ->join('user u', 'u.id_user = p.id_user', 'left')
+                ->join('paket pk', 'pk.id_paket = p.id_paket', 'left')
+                ->where('p.id_pemesanan', (int)$reloaded['id_pemesanan'])
+                ->get()->getRowArray();
+            $paket = ['nama_paket' => $order['nama_paket'] ?? ''];
+            $user  = ['email' => $order['email'] ?? '', 'nama_lengkap' => $order['nama_lengkap'] ?? ''];
+
+            $notifier = new ResultNotifier(new Mailer());
+            $notifier->notifyIfNeeded($reloaded, $order, $user, $paket);
+        }
+
+        // Logika revisi selesai -> cek batas 2x
+        if ($statusNow === Status::PROD_REVISI && $tahap === Status::PROD_REVISI_SELESAI) {
             $ord2 = $db->table('pemesanan')
                 ->select('catatan_pelanggan,status_pemesanan')
                 ->where('id_pemesanan', (int)$job['id_pemesanan'])
@@ -358,7 +370,7 @@ class TugasController extends BaseController
             $revCount = $this->countRevisi((string)($ord2['catatan_pelanggan'] ?? ''));
             if ($revCount >= 2) {
                 $db->table('pemesanan')->where('id_pemesanan', (int)$job['id_pemesanan'])->update([
-                    'status_pemesanan' => 'serah terima hasil',
+                    'status_pemesanan' => Status::ORDER_SERAH_TERIMA_HASIL,
                 ]);
             } else {
                 $restore = $this->restoreOrderStatusAfterRevisi($db, (int)$job['id_pemesanan']);

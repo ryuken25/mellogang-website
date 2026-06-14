@@ -31,7 +31,8 @@ class Filters extends BaseFilters
         'invalidchars'  => InvalidChars::class,
         'secureheaders' => SecureHeaders::class,
         'cors'          => Cors::class,
-        'role' => \App\Filters\RoleFilter::class,
+        'role'          => \App\Filters\RoleFilter::class,
+        'appsec'        => \App\Filters\SecurityHeaders::class,
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
@@ -80,6 +81,7 @@ class Filters extends BaseFilters
         'after' => [
             // 'honeypot',
             // 'secureheaders',
+            'appsec',
         ],
     ];
 
