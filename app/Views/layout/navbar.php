@@ -20,6 +20,7 @@ if ($role !== 'editor') {
   $navItems[] = ['label' => t('nav.home'),        'url' => site_url('/'),                'match' => $path === ''];
   $navItems[] = ['label' => t('nav.packages'),    'url' => site_url('/katalog'),         'match' => str_starts_with($path, 'katalog')];
   $navItems[] = ['label' => t('nav.portfolio'),   'url' => site_url('/portofolio'),      'match' => str_starts_with($path, 'portofolio')];
+  $navItems[] = ['label' => t('nav.showcase') ?? 'Showcase', 'url' => site_url('/showcase'), 'match' => str_starts_with($path, 'showcase')];
   $navItems[] = ['label' => t('nav.status'),      'url' => site_url('/status-pesanan'),  'match' => str_starts_with($path, 'status-pesanan')];
   $navItems[] = ['label' => t('nav.contact'),     'url' => site_url('/kontak'),          'match' => str_starts_with($path, 'kontak')];
 }

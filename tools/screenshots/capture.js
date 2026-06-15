@@ -27,6 +27,7 @@ const PAGES = {
     { name: 'home',         url: '/',                  auth: null },
     { name: 'katalog',      url: '/katalog',           auth: null },
     { name: 'portofolio',   url: '/portofolio',        auth: null },
+    { name: 'showcase',     url: '/showcase',          auth: null },
     { name: 'kontak',       url: '/kontak',            auth: null },
     { name: 'status',       url: '/status-pesanan',    auth: null },
     { name: 'status-kode',  url: '/status-pesanan?kode=MLG', auth: null },
@@ -95,12 +96,12 @@ async function shoot(page, area, name, viewportLabel) {
 
   const browser = await chromium.launch({ headless: true });
 
-  // Desktop viewport
-  const desktopCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  // Desktop: 1920x1080 (16:9 — "kalo di admin tuh 16:9")
+  const desktopCtx = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
   const desktop = await desktopCtx.newPage();
 
-  // Mobile viewport
-  const mobileCtx = await browser.newContext({ ...devices['iPhone 13'] });
+  // Mobile: 360x640 (9:16 strict)
+  const mobileCtx = await browser.newContext({ viewport: { width: 360, height: 640 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
   const mobile = await mobileCtx.newPage();
 
   for (const area of Object.keys(PAGES)) {
@@ -117,11 +118,32 @@ async function shoot(page, area, name, viewportLabel) {
       }
       try {
         await desktop.goto(BASE + p.url, { waitUntil: 'domcontentloaded', timeout: 15_000 });
-        await desktop.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
+        // Tunggu semua image load (max 8 detik)
+        await desktop.waitForLoadState('networkidle', { timeout: 8_000 }).catch(() => {});
+        await desktop.evaluate(async () => {
+          const imgs = Array.from(document.images || []);
+          await Promise.all(imgs.map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => {
+              img.addEventListener('load', r, { once: true });
+              img.addEventListener('error', r, { once: true });
+              setTimeout(r, 5000);
+            })
+          ));
+        }).catch(() => {});
         await shoot(desktop, area, p.name, 'desktop');
 
         await mobile.goto(BASE + p.url, { waitUntil: 'domcontentloaded', timeout: 15_000 });
-        await mobile.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
+        await mobile.waitForLoadState('networkidle', { timeout: 8_000 }).catch(() => {});
+        await mobile.evaluate(async () => {
+          const imgs = Array.from(document.images || []);
+          await Promise.all(imgs.map(img =>
+            img.complete ? Promise.resolve() : new Promise(r => {
+              img.addEventListener('load', r, { once: true });
+              img.addEventListener('error', r, { once: true });
+              setTimeout(r, 5000);
+            })
+          ));
+        }).catch(() => {});
         await shoot(mobile, area, p.name, 'mobile');
       } catch (e) {
         console.error('  !', p.url, e.message);

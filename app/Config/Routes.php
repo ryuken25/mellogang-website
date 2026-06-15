@@ -39,6 +39,9 @@ $routes->get('register', 'AuthController::registerForm');
 $routes->post('register', 'AuthController::register');
 $routes->get('logout', 'AuthController::logout');
 
+// Showcase / tour halaman publik — gallery screenshot + features
+$routes->get('showcase', 'Public\\ShowcaseController::index');
+
 // Language switcher (set cookie + redirect back)
 $routes->get('lang/(:segment)', 'BaseController::setLanguage/$1');
 
