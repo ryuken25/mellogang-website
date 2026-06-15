@@ -1192,6 +1192,192 @@ textarea.input { min-height: 80px; resize: vertical; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ============== MOBILE POLISH ============== */
+@media (max-width: 720px) {
+  /* Tighter section padding everywhere */
+  .porto,
+  .showcase,
+  .container { padding: 24px 18px 56px; }
+
+  /* Compact hero (porto + showcase + customer) */
+  .porto-hero,
+  .sc-hero,
+  .customer-hero {
+    padding: 32px 0 28px;
+    margin-bottom: 32px;
+  }
+  .porto-hero__title,
+  .sc-hero__title {
+    font-size: clamp(34px, 9.5vw, 48px);
+    line-height: 1.02;
+    margin-bottom: 16px;
+  }
+  .porto-hero__line--alt,
+  .sc-hero__line--alt { -webkit-text-stroke-width: 1.2px; text-stroke-width: 1.2px; }
+  .porto-hero__sub,
+  .sc-hero__sub { font-size: 15px; margin-bottom: 20px; }
+  .porto-hero__top,
+  .sc-hero__top { margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+  .porto-hero__chip,
+  .sc-hero__chip { font-size: 10px; letter-spacing: 0.18em; }
+  .porto-hero__meta {
+    gap: 18px;
+    padding-top: 18px;
+  }
+  .porto-hero__meta-num { font-size: 24px; }
+  .porto-hero__meta-label { font-size: 10px; letter-spacing: 0.1em; }
+
+  /* Sections: tighter */
+  .porto-section,
+  .sc-section { margin-bottom: 48px; }
+  .porto-section__head,
+  .sc-section__head { margin-bottom: 18px; }
+  .porto-section__title,
+  .sc-section__title { font-size: 24px; }
+
+  /* Carousel: tight peek, larger nav buttons, edge padding */
+  .porto-rail {
+    margin: 0 -18px;       /* bleed to edges */
+    padding: 0 18px 12px;  /* restore inner padding */
+    scroll-padding-left: 18px;
+  }
+  .porto-card {
+    flex: 0 0 calc(100vw - 72px); /* 1 card + small peek on right */
+    scroll-snap-align: start;
+  }
+  .porto-nav {
+    width: 40px; height: 40px;
+    font-size: 16px;
+  }
+  .porto-card__title { font-size: 18px; }
+  .porto-card__overlay { padding: 16px 18px 18px; }
+  .porto-card__open { top: 12px; right: 12px; width: 30px; height: 30px; font-size: 14px; }
+
+  /* Filter pills: bigger touch, wrap better */
+  .porto-filter,
+  .porto-filters {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .porto-filter {
+    padding: 10px 14px;
+    font-size: 12.5px;
+    min-height: 38px;
+  }
+  .porto-filter__count { font-size: 10px; }
+
+  /* Tiles: 1-col, taller, comfortable padding */
+  .porto-tile__media { aspect-ratio: 4/5 !important; }
+  .porto-tile--corporate .porto-tile__media,
+  .porto-tile--product .porto-tile__media,
+  .porto-tile--event .porto-tile__media { aspect-ratio: 4/5 !important; }
+  .porto-tile__hover { padding: 16px 18px 18px; }
+  .porto-tile__title { font-size: 16px; }
+
+  /* CTA: stack */
+  .porto-cta,
+  .sc-cta {
+    grid-template-columns: 1fr;
+    padding: 32px 22px;
+    gap: 20px;
+  }
+  .porto-cta__title,
+  .sc-cta__title { font-size: 24px; }
+  .porto-cta__actions,
+  .sc-cta__actions { width: 100%; }
+  .porto-cta__actions .btn,
+  .sc-cta__actions .btn { width: 100%; justify-content: center; }
+
+  /* Customer dashboard */
+  .customer-hero__stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .kpi { padding: 12px 10px; }
+  .kpi__value { font-size: 22px; }
+  .kpi__label { font-size: 9.5px; letter-spacing: 0.06em; }
+  .customer-hero__title { font-size: 28px; }
+  .customer-hero__sub { font-size: 14px; }
+
+  /* Booking cards: more breathable */
+  .booking-card { padding: 18px 18px 16px; border-radius: 14px; }
+  .booking-title { font-size: 20px; margin-bottom: 14px; }
+  .booking-meta { gap: 10px; padding: 12px 0; margin-bottom: 14px; }
+  .booking-meta__label { font-size: 9.5px; letter-spacing: 0.14em; }
+  .booking-meta__value { font-size: 14px; }
+  .track-link { font-size: 13px; padding: 6px 0; min-height: 36px; }
+
+  /* Admin */
+  .adminShell { padding: 16px 14px; gap: 16px; }
+  .adminShell__sidebar { position: static; }
+  .adminSide { padding: 14px; }
+  .adminHero,
+  .admin-hero {
+    padding: 28px 0;
+    margin-bottom: 24px;
+  }
+  .adminHero__title,
+  .admin-hero__title { font-size: 26px; }
+  .adminHero__sub,
+  .admin-hero__sub { font-size: 14px; }
+  .admin-kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .admin-kpi { padding: 14px 14px; }
+  .admin-kpi__value { font-size: 26px; }
+  .admin-kpi__label { font-size: 10px; }
+
+  /* Porto strip mobile: 2-col */
+  .porto-strip { grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Topbar: smaller */
+  .topbar__inner { padding: 10px 16px; gap: 8px; }
+  .brand__logoimg { height: 32px; }
+  .navToggle { width: 40px; height: 40px; }
+  .navToggle__bar { width: 18px; }
+  .navToggle.is-active .navToggle__bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .navToggle.is-active .navToggle__bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Auth: tighter */
+  .auth-wrap { margin: 16px auto; }
+  .auth-title { font-size: 24px; letter-spacing: 0.04em; }
+  .auth-sub { font-size: 13px; }
+  .card { padding: 20px 18px; }
+  .form > div { margin: 10px 0; }
+  .label { font-size: 12px; }
+
+  /* Generic panel: tighter */
+  .panel { padding: 18px; }
+  .section__title { font-size: 18px; }
+
+  /* Tables: smaller text */
+  .table th, .table td { padding: 8px 10px; font-size: 12px; }
+}
+
+/* Very small phones (iPhone SE etc, <= 380px) */
+@media (max-width: 380px) {
+  .porto-hero__title,
+  .sc-hero__title { font-size: 30px; }
+  .porto-card { flex: 0 0 calc(100vw - 48px); }
+  .porto-rail { margin: 0 -14px; padding: 0 14px 12px; scroll-padding-left: 14px; }
+  .porto,
+  .showcase,
+  .container { padding: 20px 14px 48px; }
+  .adminShell { padding: 12px 10px; }
+  .customer-hero__stats { grid-template-columns: 1fr 1fr; }
+  .customer-hero__stats .kpi:nth-child(3) { grid-column: 1 / -1; }
+  .booking-meta { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* Tablet-ish (601-900px): 2-col grids where 1-col was too sparse */
+@media (min-width: 601px) and (max-width: 900px) {
+  .porto-grid { grid-template-columns: repeat(2, 1fr); }
+  .sc-shot-grid { grid-template-columns: repeat(2, 1fr); }
+  .porto-card { flex: 0 0 60vw; }
+}
+
+/* Safe-area + iOS bottom bar */
+@supports (padding: max(0px)) {
+  .porto-cta, .sc-cta, .porto-section:last-of-type, .sc-section:last-of-type {
+    padding-bottom: max(40px, env(safe-area-inset-bottom));
+  }
+}
+
 /* Scroll reveal */
 .reveal {
   opacity: 0;
