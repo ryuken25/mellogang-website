@@ -27,6 +27,7 @@ const PAGES = {
     { name: 'home',         url: '/',                  auth: null },
     { name: 'katalog',      url: '/katalog',           auth: null },
     { name: 'portofolio',   url: '/portofolio',        auth: null },
+    { name: 'showcase',     url: '/showcase',          auth: null },
     { name: 'kontak',       url: '/kontak',            auth: null },
     { name: 'status',       url: '/status-pesanan',    auth: null },
     { name: 'status-kode',  url: '/status-pesanan?kode=MLG', auth: null },

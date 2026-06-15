@@ -1595,6 +1595,218 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 14px;
 }
+
+/* ============== BOOKING CARDS (Phase 3-4 redesign) ============== */
+.booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.booking-card {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 22px 22px 18px;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s var(--ease-quint, cubic-bezier(.22, 1, .36, 1)),
+    transform 0.7s var(--ease-quint, cubic-bezier(.22, 1, .36, 1)),
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    background 0.4s ease;
+  will-change: opacity, transform;
+}
+.booking-card.is-visible { opacity: 1; transform: none; }
+.booking-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: color-mix(in srgb, var(--brand) 35%, transparent);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.4s var(--ease-quint, cubic-bezier(.22, 1, .36, 1));
+}
+.booking-card:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  background: color-mix(in srgb, var(--brand) 4%, rgba(255,255,255,0.02));
+  box-shadow: 0 20px 60px -20px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+.booking-card:hover::before { transform: scaleY(1); }
+
+.booking-card__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.booking-ref {
+  font-family: 'JetBrains Mono', 'Space Grotesk', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.booking-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin: 0 0 18px 0;
+  color: var(--text);
+}
+
+.booking-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 16px;
+}
+.booking-meta__cell { min-width: 0; }
+.booking-meta__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.booking-meta__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.booking-meta__value--price {
+  font-weight: 600;
+  font-family: 'Space Grotesk', sans-serif;
+}
+.booking-meta__icon {
+  width: 14px; height: 14px;
+  opacity: 0.5;
+  flex: 0 0 14px;
+}
+
+/* Status pill (with animated dot) */
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid currentColor;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  white-space: nowrap;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 6px;
+}
+.status--awaiting   { color: #FFB749; }
+.status--paid       { color: #2EE6A8; }
+.status--revisi     { color: #FFB749; }
+.status--processing { color: var(--brand); }
+.status--done       { color: #2EE6A8; }
+.status--cancelled  { color: #FF5C6C; }
+.status--muted      { color: var(--muted); }
+
+.status--awaiting .status-dot,
+.status--revisi .status-dot {
+  animation: dotPulse 2s ease-in-out infinite;
+}
+.status--processing .status-dot,
+.status--paid .status-dot,
+.status--done .status-dot {
+  animation: dotSteady 2.4s ease-in-out infinite;
+}
+.status--cancelled .status-dot,
+.status--muted .status-dot {
+  animation: none;
+}
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 183, 73, 0.55); }
+  50%      { box-shadow: 0 0 0 6px rgba(255, 183, 73, 0); }
+}
+@keyframes dotSteady {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 0%, transparent); }
+  50%      { box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 12%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status-dot { animation: none !important; }
+}
+
+/* Magnetic track link */
+.track-link {
+  position: relative;
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: transform 0.3s var(--ease-quint, cubic-bezier(.22, 1, .36, 1));
+  font-family: 'Space Grotesk', sans-serif;
+}
+.track-link .arrow {
+  display: inline-block;
+  transition: transform 0.35s var(--ease-quint, cubic-bezier(.22, 1, .36, 1));
+  font-weight: 700;
+}
+.track-link::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  height: 1px; width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s var(--ease-quint, cubic-bezier(.22, 1, .36, 1));
+}
+.track-link:hover .arrow { transform: translateX(6px); }
+.track-link:hover::after { transform: scaleX(1); }
+.track-link:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .booking-card { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .track-link { transition: none !important; }
+  .track-link::after { transition: none !important; }
+  .track-link .arrow { transition: none !important; }
+}
+
+/* Easing tokens (use existing if defined) */
+:root {
+  --ease-quint: cubic-bezier(.22, 1, .36, 1);
+  --ease-expo:  cubic-bezier(.16, 1, .30, 1);
+}
 .order-card {
   display: block;
   background: var(--bg-elev);

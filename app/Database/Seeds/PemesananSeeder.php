@@ -31,12 +31,13 @@ class PemesananSeeder extends Seeder
 
         $pelangganIds = array_column($pelanggan, 'id_user');
 
+        // Canonical snake_case (sesuai App\Support\Status enum)
         $statusList = [
-            'menunggu pembayaran',
-            'menunggu verifikasi',
-            'menunggu pelunasan',
-            'diproses',
-            'serah terima hasil',
+            'menunggu_pembayaran',
+            'menunggu_verifikasi',
+            'menunggu_pelunasan',
+            'revisi_diproses',
+            'serah_terima_hasil',
             'selesai',
         ];
 
