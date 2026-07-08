@@ -13,6 +13,12 @@ export const brand = {
   linkedin: 'https://www.linkedin.com/in/kadek-darmadi-8674a2241/',
   whatsapp: 'https://wa.me/+6282236004917',
   phone: '+62 822-3600-4917',
+  socialIcons: {
+    instagram: '/brand/social/instagram.png',
+    youtube: '/brand/social/youtube.png',
+    whatsapp: '/brand/social/whatsapp.png',
+    linkedin: '/brand/social/linkedin.png',
+  },
   email: 'mellogangvisuals@gmail.com',
   joined: 'November 2021',
   timezone: 'Asia/Makassar',

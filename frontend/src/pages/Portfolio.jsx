@@ -26,7 +26,7 @@ export default function Portfolio(){
   return <>
     <PortfolioHero onExplore={()=>worksRef.current?.scrollIntoView({behavior:'smooth'})}/>
     <FeaturedStories items={portfolioItems} onOpen={setActive}/>
-    <section ref={worksRef} className="section-pad pt-0"><div className="container-premium"><div className="mb-8 max-w-3xl"><p className="eyebrow">All Works</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] text-cream sm:text-6xl">Bento Showcase</h2><p className="subtle mt-5">A mixed editorial grid of real Instagram frames and YouTube films from Mellogang Visuals. Filter by story type, platform, or production mood.</p></div><PortfolioFilters active={filter} onChange={setFilter}/></div><PortfolioGrid items={shown} onOpen={setActive}/></section>
+    <section ref={worksRef} className="section-pad pt-0"><div className="container-premium"><div className="mb-8 max-w-3xl"><p className="eyebrow">All Works</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] text-cream sm:text-6xl">Selected visual stories.</h2><p className="subtle mt-5">Browse selected weddings, ceremonies, graduations, events, and motion stories from Mellogang Visuals.</p></div><PortfolioFilters active={filter} onChange={setFilter}/></div><PortfolioGrid items={shown} onOpen={setActive}/></section>
     <YoutubeShowcase items={portfolioItems} onOpen={setActive}/>
     <InstagramShowcase items={portfolioItems} onOpen={setActive}/>
     <PortfolioCTA/>
