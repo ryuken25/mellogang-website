@@ -27,7 +27,7 @@ export const brand = {
 }
 export const socialLinks = [
   { key: 'whatsapp', label: 'Fast Booking', title: 'WhatsApp', text: 'Konsultasi paket, tanggal acara, dan estimasi konsep.', url: brand.whatsapp },
-  { key: 'instagram', label: 'Daily Works & Reels', title: 'Instagram', text: 'Real frames, reels, and behind-the-scenes from Mellogang Visuals.', url: brand.instagram },
+  { key: 'instagram', label: 'Daily Works & Reels', title: 'Instagram', text: 'Latest frames, reels, and behind-the-scenes from Mellogang Visuals.', url: brand.instagram },
   { key: 'youtube', label: 'Films & Visual Stories', title: 'YouTube', text: 'Watch motion stories, wedding films, and promotional videos.', url: brand.youtube },
   { key: 'linkedin', label: 'Founder / Professional Profile', title: 'LinkedIn', text: 'Professional profile of Kadek Darmadi.', url: brand.linkedin },
 ]
