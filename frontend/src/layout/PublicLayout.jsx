@@ -1,23 +1,22 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { Menu, Sparkles } from 'lucide-react'
+import { AtSign, Menu, MessageCircle, Play, Sparkles } from 'lucide-react'
 import { useState } from 'react'
-import { backendUrl } from '../lib/api'
 import { cn } from '../lib/utils'
 import { brand } from '../data/brandData'
-const nav = [['/','Home'],['/katalog','Katalog'],['/portofolio','Portofolio'],['/kontak','Kontak'],['/status-pesanan','Status'],['/invoice','Invoice']]
+const nav = [['/','Home'],['/katalog','Katalog'],['/portofolio','Portofolio'],['/status-pesanan','Status Pesanan'],['/kontak','Kontak']]
 export default function PublicLayout(){
  const [open,setOpen]=useState(false)
  return <div className="min-h-screen">
   <header className="sticky top-0 z-50 border-b border-white/10 bg-ink/70 backdrop-blur-2xl">
    <div className="container-premium flex h-20 items-center justify-between">
-    <Link to="/" className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl border border-gold/40 bg-[#202020] shadow-glow"><img src={brand.logo} alt="Mellogang Visuals logo" className="h-full w-full object-cover"/></span><span><b className="block text-lg tracking-tight">{brand.name}</b><small className="text-cream/45">{brand.tagline.replace('Mellogang Visuals | ', '')}</small></span></Link>
-    <nav className="hidden items-center gap-1 lg:flex">{nav.map(([href,label])=><NavLink key={href} to={href} className={({isActive})=>cn('rounded-full px-4 py-2 text-sm text-cream/65 hover:bg-white/5 hover:text-cream',isActive&&'bg-white/10 text-cream')}>{label}</NavLink>)}</nav>
-    <div className="hidden items-center gap-3 lg:flex"><a className="btn-secondary" href={backendUrl('/login')}>Login</a><Link className="btn-primary" to="/katalog"><Sparkles size={16}/>Booking</Link></div>
+    <Link to="/" className="flex items-center gap-3"><span className="grid h-12 w-12 place-items-center overflow-hidden rounded-2xl border border-gold/40 bg-[#202020] shadow-glow"><img src={brand.logo} alt="Mellogang Visuals logo" className="h-full w-full object-cover"/></span><span><b className="block text-lg tracking-tight">{brand.name}</b><small className="text-cream/45">{brand.location}</small></span></Link>
+    <nav className="hidden items-center gap-1 lg:flex">{nav.map(([href,label])=><NavLink key={href} to={href} className={({isActive})=>cn('rounded-full px-4 py-2 text-sm text-cream/65 hover:bg-white/5 hover:text-cream',isActive&&'bg-white/10 text-cream',href==='/portofolio'&&'border border-gold/20')}>{label}</NavLink>)}</nav>
+    <div className="hidden items-center gap-2 lg:flex"><a className="rounded-full p-2 text-cream/55 hover:bg-white/5 hover:text-gold" href={brand.instagram} target="_blank" rel="noreferrer"><AtSign size={18}/></a><a className="rounded-full p-2 text-cream/55 hover:bg-white/5 hover:text-gold" href={brand.youtube} target="_blank" rel="noreferrer"><Play size={18}/></a><Link className="btn-secondary" to="/auth?mode=signin">Login</Link><a className="btn-primary" href={brand.whatsapp} target="_blank" rel="noreferrer"><Sparkles size={16}/>Booking</a></div>
     <button className="lg:hidden" onClick={()=>setOpen(!open)}><Menu/></button>
    </div>
-   {open && <div className="container-premium pb-5 lg:hidden">{nav.map(([href,label])=><NavLink onClick={()=>setOpen(false)} key={href} to={href} className="block rounded-2xl px-4 py-3 text-cream/80 hover:bg-white/5">{label}</NavLink>)}<a className="btn-primary mt-3 w-full" href={backendUrl('/login')}>Login Backend</a></div>}
+   {open && <div className="container-premium pb-5 lg:hidden">{nav.map(([href,label])=><NavLink onClick={()=>setOpen(false)} key={href} to={href} className="block rounded-2xl px-4 py-3 text-cream/80 hover:bg-white/5">{label}</NavLink>)}<Link className="btn-secondary mt-3 w-full" to="/auth?mode=signin">Login</Link><a className="btn-primary mt-3 w-full" href={brand.whatsapp} target="_blank" rel="noreferrer">Booking WhatsApp</a></div>}
   </header>
   <main><Outlet/></main>
-  <footer className="border-t border-white/10 py-10"><div className="container-premium flex flex-col gap-4 text-sm text-cream/55 md:flex-row md:items-center md:justify-between"><p>© {new Date().getFullYear()} {brand.name}. {brand.tagline.replace('Mellogang Visuals | ', '')}.</p><div className="flex flex-wrap gap-3"><a className="hover:text-gold" href={brand.instagram} target="_blank">Instagram</a><a className="hover:text-gold" href={brand.youtube} target="_blank">YouTube</a><a className="hover:text-gold" href={brand.linkedin} target="_blank">LinkedIn</a><a className="hover:text-gold" href={brand.linktree} target="_blank">Linktree</a></div></div></footer>
+  <footer className="border-t border-white/10 py-12"><div className="container-premium grid gap-8 md:grid-cols-[1.2fr_.8fr_.8fr]"><div><div className="flex items-center gap-3"><img src={brand.logo} className="h-12 w-12 rounded-2xl object-cover"/><div><b className="text-cream">{brand.name}</b><p className="text-sm text-cream/45">{brand.tagline}</p></div></div><p className="subtle mt-5 max-w-md">{brand.description}</p><p className="mt-6 text-sm text-cream/45">© 2026 {brand.name}. Crafted for cinematic stories.</p></div><div><p className="mb-4 font-semibold text-cream">Quick Links</p><div className="grid gap-2 text-sm text-cream/55">{nav.map(([href,label])=><Link key={href} className="hover:text-gold" to={href}>{label}</Link>)}</div></div><div><p className="mb-4 font-semibold text-cream">Social</p><div className="grid gap-2 text-sm text-cream/55"><a className="hover:text-gold" href={brand.whatsapp} target="_blank" rel="noreferrer">WhatsApp</a><a className="hover:text-gold" href={brand.instagram} target="_blank" rel="noreferrer">Instagram</a><a className="hover:text-gold" href={brand.youtube} target="_blank" rel="noreferrer">YouTube</a><a className="hover:text-gold" href={brand.linkedin} target="_blank" rel="noreferrer">LinkedIn</a></div></div></div></footer>
  </div>
 }

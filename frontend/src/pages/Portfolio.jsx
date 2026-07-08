@@ -1,5 +1,35 @@
-import { useEffect, useMemo, useState } from 'react'
-import { X } from 'lucide-react'
-import { api } from '../lib/api'
-import { Card, EmptyState, SectionHeader } from '../components/ui'
-export default function Portfolio(){const [items,setItems]=useState([]),[cat,setCat]=useState('all'),[active,setActive]=useState(null),[loading,setLoading]=useState(true);useEffect(()=>{api.portfolio().then(d=>setItems(Array.isArray(d)?d:[])).finally(()=>setLoading(false))},[]);const cats=['all',...new Set(items.map(i=>(i.kategori||'event').toLowerCase()))];const shown=useMemo(()=>cat==='all'?items:items.filter(i=>(i.kategori||'event').toLowerCase()===cat),[items,cat]);return <section className="section-pad"><div className="container-premium"><SectionHeader eyebrow="Portofolio" title="Masonry gallery dengan hover cinematic overlay">Filter category, preview karya, dan buka media asli kalau URL backend tersedia.</SectionHeader><div className="mb-8 flex flex-wrap gap-2">{cats.map(c=><button className={cat===c?'btn-primary':'btn-secondary'} onClick={()=>setCat(c)} key={c}>{c}</button>)}</div>{loading?<EmptyState title="Loading portfolio..."/>:shown.length===0?<EmptyState title="Portfolio belum tersedia"/>:<div className="columns-1 gap-4 sm:columns-2 lg:columns-3">{shown.map((p,i)=><button key={p.id_portfolio||p.judul} onClick={()=>setActive(p)} className="group mb-4 block w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/5 text-left break-inside-avoid"><img className={`${i%3===0?'h-96':'h-72'} w-full object-cover transition duration-700 group-hover:scale-105`} src={p.thumb||p.thumbnail_url}/><div className="p-5"><span className="badge">{p.kategori}</span><h3 className="mt-3 text-xl font-semibold">{p.judul}</h3><p className="subtle mt-2 line-clamp-2">{p.deskripsi}</p></div></button>)}</div>}</div>{active&&<div className="fixed inset-0 z-[80] grid place-items-center bg-black/80 p-4 backdrop-blur-xl" onClick={()=>setActive(null)}><Card className="max-h-[90vh] w-full max-w-5xl overflow-auto p-3" onClick={e=>e.stopPropagation()}><button className="float-right m-3 rounded-full bg-white/10 p-2" onClick={()=>setActive(null)}><X/></button><img className="max-h-[68vh] w-full rounded-[1.5rem] object-cover" src={active.thumb||active.thumbnail_url}/><div className="p-5"><p className="badge">{active.kategori}</p><h3 className="mt-3 text-3xl font-semibold">{active.judul}</h3><p className="subtle mt-3">{active.deskripsi}</p>{active.url_media&&active.url_media!=='#'&&<a className="btn-primary mt-5" href={active.url_media} target="_blank">Buka Media</a>}</div></Card></div>}</section>}
+import { useMemo, useRef, useState } from 'react'
+import PortfolioHero from '../components/portfolio/PortfolioHero'
+import FeaturedStories from '../components/portfolio/FeaturedStories'
+import PortfolioFilters from '../components/portfolio/PortfolioFilters'
+import PortfolioGrid from '../components/portfolio/PortfolioGrid'
+import PortfolioModal from '../components/portfolio/PortfolioModal'
+import YoutubeShowcase from '../components/portfolio/YoutubeShowcase'
+import InstagramShowcase from '../components/portfolio/InstagramShowcase'
+import PortfolioCTA from '../components/portfolio/PortfolioCTA'
+import { portfolioItems } from '../data/portfolioData'
+
+const matchesFilter = (item, filter) => {
+  if (filter === 'All') return true
+  if (filter === 'Instagram') return item.source === 'Instagram'
+  if (filter === 'YouTube') return item.source === 'YouTube'
+  if (filter === 'Film') return ['youtube','video','channel_feature'].includes(item.type) || item.tags?.includes('Film')
+  if (filter === 'Photo') return ['photo','instagram'].includes(item.type)
+  return item.category === filter || item.tags?.includes(filter)
+}
+export default function Portfolio(){
+  const worksRef = useRef(null)
+  const [filter,setFilter]=useState('All')
+  const [active,setActive]=useState(null)
+  const shown=useMemo(()=>portfolioItems.filter(item=>matchesFilter(item,filter)),[filter])
+  const navigate = (dir) => { const list=shown.length?shown:portfolioItems; const idx=list.findIndex(i=>i.id===active?.id); setActive(list[(idx+dir+list.length)%list.length]) }
+  return <>
+    <PortfolioHero onExplore={()=>worksRef.current?.scrollIntoView({behavior:'smooth'})}/>
+    <FeaturedStories items={portfolioItems} onOpen={setActive}/>
+    <section ref={worksRef} className="section-pad pt-0"><div className="container-premium"><div className="mb-8 max-w-3xl"><p className="eyebrow">All Works</p><h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] text-cream sm:text-6xl">Bento Showcase</h2><p className="subtle mt-5">A mixed editorial grid of real Instagram frames and YouTube films from Mellogang Visuals. Filter by story type, platform, or production mood.</p></div><PortfolioFilters active={filter} onChange={setFilter}/></div><PortfolioGrid items={shown} onOpen={setActive}/></section>
+    <YoutubeShowcase items={portfolioItems} onOpen={setActive}/>
+    <InstagramShowcase items={portfolioItems} onOpen={setActive}/>
+    <PortfolioCTA/>
+    <PortfolioModal item={active} items={shown} onClose={()=>setActive(null)} onNavigate={navigate}/>
+  </>
+}

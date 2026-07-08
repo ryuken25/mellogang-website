@@ -1,3 +1,10 @@
-import { brand } from '../data/brandData'
-import { backendUrl } from '../lib/api'
-export default function Auth({mode='login'}){const isLogin=mode==='login';return <section className="min-h-screen grid lg:grid-cols-2"><div className="hidden bg-[url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=1400&q=80')] bg-cover bg-center lg:block"><div className="h-full bg-black/55 p-12 flex items-end"><h1 className="headline max-w-xl">Your story deserves cinematic treatment.</h1></div></div><div className="grid place-items-center p-6"><div className="w-full max-w-md"><img src={brand.logo} alt="Mellogang Visuals logo" className="h-16 w-16 rounded-3xl border border-gold/30 object-cover shadow-glow"/><h2 className="mt-6 text-4xl font-semibold">{isLogin?'Welcome back':'Create account'}</h2><p className="subtle mt-3">Premium UI wrapper untuk {brand.handle}. Form action mengarah ke route auth CodeIgniter agar logic OTP, Google OAuth, lockout tetap aman.</p><form className="mt-8 space-y-4" action={backendUrl(isLogin?'/login':'/register')} method="post">{!isLogin&&<input name="nama_lengkap" className="input-dark" placeholder="Nama lengkap"/>}<input name="email" className="input-dark" placeholder="Email"/><input name="password" type="password" className="input-dark" placeholder="Password"/>{!isLogin&&<><input name="password_confirm" type="password" className="input-dark" placeholder="Konfirmasi password"/><input name="no_telepon" className="input-dark" placeholder="Nomor WhatsApp"/></>}<button className="btn-primary w-full">{isLogin?'Login':'Register'}</button></form><a className="btn-secondary mt-4 w-full" href={backendUrl(isLogin?'/register':'/login')}>{isLogin?'Buat akun baru':'Sudah punya akun?'}</a></div></div></section>}
+import { useSearchParams } from 'react-router-dom'
+import AuthCarousel from '../components/AuthCarousel'
+import AuthForm from '../components/AuthForm'
+
+export default function Auth({ defaultMode='signin' }){
+  const [params]=useSearchParams()
+  const raw=params.get('mode') || defaultMode
+  const mode=['signup','register'].includes(raw) ? 'signup' : 'signin'
+  return <section className="min-h-screen bg-ink lg:grid lg:grid-cols-[1.05fr_.95fr]"><AuthCarousel/><div className="grid min-h-screen place-items-center p-6 sm:p-10"><AuthForm mode={mode}/></div></section>
+}

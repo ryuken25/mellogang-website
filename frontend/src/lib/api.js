@@ -1,7 +1,7 @@
 import { packages as mockPackages, portfolio as mockPortfolio, orders as mockOrders } from '../data/mockData'
 import { brand } from '../data/brandData'
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
+const API_BASE = (import.meta.env.VITE_BACKEND_BASE_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '')
 async function request(path, fallback) {
   if (!API_BASE) return fallback
   try {
