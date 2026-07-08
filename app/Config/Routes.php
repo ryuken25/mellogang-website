@@ -64,6 +64,16 @@ $routes->get('katalog', 'Public\\KatalogController::index');
 $routes->get('portofolio', 'Public\\PortofolioController::index');
 $routes->get('kontak', 'Public\\KontakController::index');
 
+// JSON API for the React/Vercel frontend. These routes are additive and do not
+// replace the existing CodeIgniter views or role-protected business flows.
+$routes->group('api', static function ($routes) {
+    $routes->get('packages', 'Api\\PublicApiController::packages');
+    $routes->get('portfolio', 'Api\\PublicApiController::portfolio');
+    $routes->get('brand', 'Api\\PublicApiController::brand');
+    $routes->get('order-status', 'Api\\PublicApiController::orderStatus');
+    $routes->get('dashboard/admin-summary', 'Api\\DashboardApiController::adminSummary', ['filter' => 'role:admin']);
+});
+
 // Status Pesanan (public)
 $routes->get('status-pesanan', 'Public\\StatusController::index');
 

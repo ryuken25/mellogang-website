@@ -103,6 +103,7 @@ vendor/
 # Node / Playwright
 #-------------------------
 node_modules/
+frontend/dist/
 tools/social-fetcher/node_modules/
 tools/social-fetcher/package-lock.json
 tests/e2e/node_modules/
