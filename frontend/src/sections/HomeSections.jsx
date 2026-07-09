@@ -216,14 +216,14 @@ export function SelectedVisualStories() {
       <AnimatePresence>
         {modalItem && (
           <motion.div
-            className="fixed inset-0 z-[90] grid place-items-center bg-black/82 p-3 backdrop-blur-2xl"
+            className="fixed inset-0 z-[90] grid place-items-center overflow-y-auto bg-black/82 p-3 backdrop-blur-2xl"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setModalItem(null)}
           >
             <motion.div
-              className="relative max-h-[94vh] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 bg-charcoal shadow-2xl"
+              className="safe-modal relative w-full max-w-5xl overflow-hidden rounded-[1.5rem] border border-white/10 bg-charcoal shadow-2xl sm:rounded-[2rem]"
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
@@ -235,8 +235,8 @@ export function SelectedVisualStories() {
               >
                 <X size={18} />
               </button>
-              <div className="grid lg:grid-cols-[1.25fr_.75fr]">
-                <div className="min-h-[300px] bg-black">
+              <div className="grid max-h-[92svh] min-h-0 lg:grid-cols-[1.25fr_.75fr]">
+                <div className="min-h-[220px] bg-black sm:min-h-[300px]">
                   {modalItem.type === 'youtube' && modalItem.embedUrl ? (
                     <iframe
                       className="aspect-video h-full min-h-[300px] w-full"
@@ -247,14 +247,14 @@ export function SelectedVisualStories() {
                     />
                   ) : (
                     <img
-                      className="h-full max-h-[80vh] w-full object-cover"
+                      className="h-full max-h-[42svh] w-full object-cover lg:max-h-[80vh]"
                       src={modalItem.thumbnail}
                       alt={modalItem.title}
                       style={{ objectPosition: modalItem.objectPosition }}
                     />
                   )}
                 </div>
-                <div className="p-6 sm:p-8 overflow-y-auto max-h-[80vh]">
+                <div className="min-h-0 overflow-y-auto p-5 sm:p-8 lg:max-h-[80vh]">
                   <p className="eyebrow">{modalItem.source} · {modalItem.category}</p>
                   <h3 className="mt-4 text-2xl font-semibold tracking-[-.04em] text-cream sm:text-3xl">{modalItem.title}</h3>
                   <p className="mt-4 text-sm leading-7 text-cream/68">{modalItem.description}</p>
@@ -269,7 +269,7 @@ export function SelectedVisualStories() {
                       <MessageCircle size={16} /> Book Similar Concept
                     </a>
                   </div>
-                  <div className="mt-6 flex justify-between">
+                  <div className="mt-6 grid grid-cols-2 gap-3">
                     <button className="btn-secondary" onClick={() => navigateModal(-1)}>
                       <ChevronLeft size={16} /> Prev
                     </button>
