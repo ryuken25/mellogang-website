@@ -1,17 +1,17 @@
 export const brand = {
   name: 'Mellogang Visuals',
   handle: '@mellogangvisuals',
-  tagline: 'Capture Your Moment, Tell Your Story.',
-  positioning: 'Professional photo-video creative studio in Bali.',
+  tagline: 'Cinematic stories for weddings, ceremonies, graduations, and meaningful moments.',
+  positioning: 'Cinematic pastel visual studio for Bali weddings, ceremonies, and graduations.',
   description: 'Professional photo and video production for weddings, ceremonies, graduations, events, and creative stories in Bali.',
   location: 'Bali, Indonesia',
-  logo: '/brand/mellogang-logo.png',
+  logo: '/brand/mellogang-logo-new.svg',
   ogImage: '/brand/mellogang-og.jpg',
   linktree: 'https://linktr.ee/mellogangvisuals',
   instagram: 'https://www.instagram.com/mellogangvisuals/',
   youtube: 'https://www.youtube.com/@mellogangvisuals',
   linkedin: 'https://www.linkedin.com/in/kadek-darmadi-8674a2241/',
-  whatsapp: 'https://wa.me/+6282236004917',
+  whatsapp: 'https://wa.me/+628****4917',
   phone: '+62 822-3600-4917',
   socialIcons: {
     instagram: '/brand/social/instagram.png',
@@ -23,8 +23,9 @@ export const brand = {
   joined: 'November 2021',
   timezone: 'Asia/Makassar',
   country: 'ID',
-  theme: { key: 'air-black', background: '#2A3236', accent: '#00f0c0', accentDeep: '#10b090', charcoal: '#202020' },
+  theme: { key: 'mello-dark', background: '#101417', accent: '#f4c875', accentDeep: '#e0b060', charcoal: '#1a1e22' },
 }
+
 export const socialLinks = [
   { key: 'whatsapp', label: 'Fast Booking', title: 'WhatsApp', text: 'Konsultasi paket, tanggal acara, dan estimasi konsep.', url: brand.whatsapp },
   { key: 'instagram', label: 'Daily Works & Reels', title: 'Instagram', text: 'Latest frames, reels, and behind-the-scenes from Mellogang Visuals.', url: brand.instagram },

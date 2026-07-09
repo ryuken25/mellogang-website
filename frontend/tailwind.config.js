@@ -5,21 +5,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        ink: '#050706',
-        charcoal: '#0E1110',
-        smoke: '#121715',
-        cream: '#FFF7EA',
-        gold: '#00F5D4',
-        amberglow: '#BFFFEF',
-        mint: '#BFFFEF',
-        tealDark: '#00BFA6',
+        ink: '#101417',
+        charcoal: '#1a1e22',
+        smoke: '#15191d',
+        cream: '#fff4e6',
+        gold: '#f4c875',
+        amberglow: '#ffe0a0',
+        mint: '#b8f3e6',
+        aqua: '#8ee7d2',
+        peach: '#ffd3ba',
+        lilac: '#d9ccff',
+        rose: '#ffc7d8',
+        tealDark: '#6bc4a8',
       },
       fontFamily: {
         display: ['Inter', 'ui-sans-serif', 'system-ui'],
         body: ['Inter', 'ui-sans-serif', 'system-ui'],
       },
       boxShadow: {
-        glow: '0 0 70px rgba(0, 245, 212, 0.18)',
+        glow: '0 0 70px rgba(244, 200, 117, 0.18)',
         soft: '0 24px 80px rgba(0, 0, 0, 0.38)',
       },
       backgroundImage: {

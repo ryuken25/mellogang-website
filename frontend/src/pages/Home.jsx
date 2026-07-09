@@ -1,2 +1,27 @@
-import { ContactCTA, Hero, HowItWorks, PortfolioPreview, Services, Testimonials } from '../sections/HomeSections'
-export default function Home(){return <><Hero/><Services/><PortfolioPreview/><HowItWorks/><Testimonials/><ContactCTA/></>}
+import {
+  Hero,
+  TrustStats,
+  SelectedVisualStories,
+  StoriesAndPackages,
+  PackagesPreview,
+  FilmsAndMotion,
+  HowBookingWorks,
+  FAQ,
+  ContactCTA,
+} from '../sections/HomeSections'
+
+export default function Home() {
+  return (
+    <>
+      <Hero />
+      <TrustStats />
+      <SelectedVisualStories />
+      <StoriesAndPackages />
+      <PackagesPreview />
+      <FilmsAndMotion />
+      <HowBookingWorks />
+      <FAQ />
+      <ContactCTA />
+    </>
+  )
+}
