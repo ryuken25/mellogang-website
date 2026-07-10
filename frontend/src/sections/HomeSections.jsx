@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   ArrowRight, CalendarCheck, CheckCircle2, Clapperboard, Film, MessageCircle,
   PackageCheck, Upload, Wand2, Camera, Heart, GraduationCap, PartyPopper,
@@ -288,110 +290,182 @@ export function SelectedVisualStories() {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Stories & Packages Scroll Story                                    */
+/*  Stories & Packages — GSAP ScrollTrigger Pinned Story               */
 /* ------------------------------------------------------------------ */
+gsap.registerPlugin(ScrollTrigger)
+
 export function StoriesAndPackages() {
   const [activeStep, setActiveStep] = useState(0)
-  const sectionRef = useRef(null)
+  const rootRef = useRef(null)
+  const pinRef = useRef(null)
+  const cardsRef = useRef([])
+  const progressRef = useRef(null)
+  const triggerRef = useRef(null)
+  const reduceMotion = useReducedMotion()
 
+  /* ---------- GSAP pinned story (desktop only) ---------- */
   useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
+    if (reduceMotion || !pinRef.current) return
+    const cards = cardsRef.current.filter(Boolean)
+    if (cards.length < 2) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const rect = entry.boundingClientRect
-            const viewportHeight = window.innerHeight
-            const scrollProgress = Math.max(0, Math.min(1, (viewportHeight - rect.top) / (viewportHeight + rect.height)))
-            const stepIndex = Math.min(storySteps.length - 1, Math.floor(scrollProgress * storySteps.length))
-            setActiveStep(stepIndex)
-          }
-        })
+    gsap.set(cards, { autoAlpha: 0, yPercent: 18, scale: 0.92 })
+    gsap.set(cards[0], { autoAlpha: 1, yPercent: 0, scale: 1 })
+    gsap.set(progressRef.current, { scaleX: 0, transformOrigin: '0% 50%' })
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        id: 'mellogang-story',
+        trigger: pinRef.current,
+        start: 'top top',
+        end: () => `+=${window.innerHeight * Math.max(1, storySteps.length - 1)}`,
+        scrub: 0.8,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const next = Math.min(storySteps.length - 1, Math.max(0, Math.round(self.progress * (storySteps.length - 1))))
+          setActiveStep(next)
+          gsap.set(progressRef.current, { scaleX: self.progress })
+        },
       },
-      { threshold: Array.from({ length: 20 }, (_, i) => i / 19) }
-    )
+    })
+    triggerRef.current = tl.scrollTrigger || null
 
-    observer.observe(section)
-    return () => observer.disconnect()
+    cards.forEach((card, index) => {
+      if (index === 0) return
+      tl.to(cards[index - 1], {
+        autoAlpha: 0,
+        yPercent: -14,
+        scale: 0.88,
+        filter: 'blur(6px)',
+        duration: 0.48,
+        ease: 'power2.out',
+      })
+      tl.to(card, {
+        autoAlpha: 1,
+        yPercent: 0,
+        scale: 1,
+        filter: 'blur(0px)',
+        duration: 0.58,
+        ease: 'power2.out',
+      }, '<0.08')
+    })
+
+    const refresh = window.setTimeout(() => ScrollTrigger.refresh(), 350)
+    return () => window.clearTimeout(refresh)
+  }, [reduceMotion])
+
+  /* ---------- jump to chapter ---------- */
+  const jumpTo = useCallback((index) => {
+    setActiveStep(index)
+    const st = triggerRef.current || ScrollTrigger.getById('mellogang-story')
+    if (st) {
+      const target = st.start + (st.end - st.start) * (index / Math.max(1, storySteps.length - 1))
+      window.scrollTo({ top: target, behavior: 'smooth' })
+    }
   }, [])
 
   const current = storySteps[activeStep]
 
   return (
-    <section ref={sectionRef} className="section-pad relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(244,200,117,.08),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(184,243,230,.06),transparent_40%)]" />
-      <div className="container-premium relative">
-        <SectionHeader center eyebrow="Stories & Packages" title="Visual production untuk setiap momen" />
+    <section ref={rootRef} className="relative">
+      {/* ============ DESKTOP: pinned scroll story ============ */}
+      <div ref={pinRef} className="relative hidden h-screen overflow-hidden lg:block">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(244,200,117,.08),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(184,243,230,.06),transparent_40%)]" />
+        <div className="relative z-10 mx-auto grid h-full max-w-7xl grid-cols-[.88fr_1.12fr] items-center gap-10 px-8 py-12">
 
-        {/* Step indicators */}
-        <div className="mx-auto mb-10 flex max-w-2xl items-center gap-2">
-          {storySteps.map((step, i) => (
-            <button
-              key={step.id}
-              onClick={() => setActiveStep(i)}
-              className={`flex-1 rounded-full py-2 text-center text-xs font-bold transition-all ${
-                i === activeStep
-                  ? 'bg-gold text-ink'
-                  : i < activeStep
-                    ? 'bg-gold/20 text-gold'
-                    : 'bg-white/5 text-cream/40'
-              }`}
-            >
-              {step.title.split(' ')[0]}
-            </button>
-          ))}
+          {/* ---- Left: copy + steps + progress ---- */}
+          <aside className="flex flex-col justify-center">
+            <p className="eyebrow">Visual Production</p>
+            <h2 className="headline mt-3 text-3xl">Stories & Packages</h2>
+            <p className="subtle mt-3 text-sm">Visual production untuk setiap momen</p>
+
+            <div className="mt-6 space-y-2">
+              {storySteps.map((step, i) => (
+                <button key={step.id} onClick={() => jumpTo(i)}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-all ${i === activeStep ? 'bg-white/10' : 'hover:bg-white/5'}`}>
+                  <step.icon size={18} className={i === activeStep ? 'text-gold' : 'text-cream/40'} />
+                  <span className={`text-sm font-semibold ${i === activeStep ? 'text-cream' : 'text-cream/40'}`}>{step.title}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
+                <div ref={progressRef} className="h-full w-full origin-left rounded-full bg-gold" />
+              </div>
+              <p className="mt-2 text-xs text-cream/40">{activeStep + 1} / {storySteps.length}</p>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <Link className="btn-primary" to="/katalog">View Packages <ArrowRight size={16} /></Link>
+              <a className="btn-secondary" href={brand.whatsapp} target="_blank" rel="noreferrer">
+                <MessageCircle size={16} /> Consult
+              </a>
+            </div>
+          </aside>
+
+          {/* ---- Right: card stack ---- */}
+          <div className="relative h-[76vh] overflow-hidden rounded-[2rem]">
+            {storySteps.map((step, i) => (
+              <div key={step.id} ref={el => { if (el) cardsRef.current[i] = el }}
+                className="absolute inset-0 grid place-items-center p-6">
+                <div className="relative w-full overflow-hidden rounded-[1.8rem] border border-white/10 shadow-glow">
+                  <img className="h-[60vh] w-full object-cover" src={step.image} alt={step.title} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <span className={step.tagColor}>{step.title}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Story content */}
-        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          {/* Left: image */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.id}
-              className="relative overflow-hidden rounded-[2rem] border border-white/10"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.4 }}
-            >
-              <img
-                className="h-72 w-full object-cover sm:h-96 lg:h-[480px]"
-                src={current.image}
-                alt={current.title}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <span className={current.tagColor}>{current.title}</span>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Right: text */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.id}
-              className="flex flex-col justify-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <div className={`inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${current.color}`}>
-                <current.icon className="text-white" size={24} />
-              </div>
-              <h3 className="mt-6 text-3xl font-bold text-cream sm:text-4xl">{current.title}</h3>
-              <p className="mt-2 text-lg text-gold">{current.subtitle}</p>
-              <p className="mt-4 text-sm leading-7 text-cream/65">{current.description}</p>
-              <div className="mt-8 flex gap-3">
-                <Link className="btn-primary" to="/katalog">View Packages <ArrowRight size={16} /></Link>
-                <a className="btn-secondary" href={brand.whatsapp} target="_blank" rel="noreferrer">
-                  <MessageCircle size={16} /> Consult
-                </a>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+      {/* ============ MOBILE: stacked vertical cards ============ */}
+      <div className="section-pad lg:hidden">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(244,200,117,.08),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(184,243,230,.06),transparent_40%)]" />
+        <div className="container-premium relative">
+          <SectionHeader center eyebrow="Stories & Packages" title="Visual production untuk setiap momen" />
+          <div className="mx-auto mt-6 flex max-w-2xl items-center gap-2">
+            {storySteps.map((step, i) => (
+              <button key={step.id} onClick={() => setActiveStep(i)}
+                className={`flex-1 rounded-full py-2 text-center text-xs font-bold transition-all ${
+                  i === activeStep ? 'bg-gold text-ink' : i < activeStep ? 'bg-gold/20 text-gold' : 'bg-white/5 text-cream/40'
+                }`}>{step.title.split(' ')[0]}</button>
+            ))}
+          </div>
+          <div className="mt-8 space-y-5">
+            {storySteps.map((step, i) => (
+              <motion.div key={step.id}
+                className={`rounded-[2rem] border p-5 transition-colors ${i === activeStep ? 'border-gold/30 bg-white/[.06]' : 'border-white/10 bg-white/[.03]'}`}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5, delay: i * 0.06 }}>
+                <div className="relative overflow-hidden rounded-2xl">
+                  <img className="h-56 w-full object-cover" src={step.image} alt={step.title} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute bottom-3 left-3"><span className={step.tagColor}>{step.title}</span></div>
+                </div>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${step.color}`}>
+                    <step.icon className="text-white" size={18} />
+                  </div>
+                  <h3 className="text-lg font-bold text-cream">{step.title}</h3>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-cream/65">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+          <div className="mt-8 flex justify-center gap-3">
+            <Link className="btn-primary" to="/katalog">View Packages <ArrowRight size={16} /></Link>
+            <a className="btn-secondary" href={brand.whatsapp} target="_blank" rel="noreferrer">
+              <MessageCircle size={16} /> Consult
+            </a>
+          </div>
         </div>
       </div>
     </section>

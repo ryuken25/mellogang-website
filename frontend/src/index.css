@@ -107,13 +107,4 @@ body::before {
   }
 }
 
-/* Scroll story animation */
-.scroll-story-step {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-.scroll-story-step.active {
-  opacity: 1;
-  transform: translateY(0);
-}
+
