@@ -101,7 +101,7 @@ export function Hero() {
       <div className="container-premium grid items-center gap-12 lg:grid-cols-[1.05fr_.95fr]">
         <Reveal>
           <div className="mb-5 inline-flex items-center gap-3 rounded-full border border-gold/25 bg-gold/10 px-4 py-2">
-            <img src={brand.logo} alt="Mellogang logo" className="h-7 w-7 rounded-full object-cover" />
+            <img src={brand.logo} alt="Mellogang logo" className="h-7 w-7 object-contain" />
             <span className="text-xs font-semibold uppercase tracking-[0.22em] text-gold">{brand.handle} · {brand.location}</span>
           </div>
           <p className="eyebrow">Cinematic Visual Studio</p>
