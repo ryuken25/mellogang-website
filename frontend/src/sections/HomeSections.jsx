@@ -36,7 +36,7 @@ const storySteps = [
     icon: Heart,
     color: 'from-rose to-peach',
     tagColor: 'tag-rose',
-    image: '/brand/instagram/ig-01.jpg',
+    image: '/brand/portfolio/ig-01-up.jpg',
   },
   {
     id: 'ceremony',
@@ -46,7 +46,7 @@ const storySteps = [
     icon: Sparkles,
     color: 'from-gold to-amberglow',
     tagColor: 'tag-peach',
-    image: '/brand/instagram/ig-02.jpg',
+    image: '/brand/portfolio/ig-02-up.jpg',
   },
   {
     id: 'graduation',
@@ -56,7 +56,7 @@ const storySteps = [
     icon: GraduationCap,
     color: 'from-aqua to-mint',
     tagColor: 'tag-mint',
-    image: '/brand/instagram/ig-03.jpg',
+    image: '/brand/portfolio/ig-03-up.jpg',
   },
   {
     id: 'event',
@@ -66,7 +66,7 @@ const storySteps = [
     icon: PartyPopper,
     color: 'from-lilac to-rose',
     tagColor: 'tag-lilac',
-    image: '/brand/instagram/ig-04.jpg',
+    image: '/brand/portfolio/ig-04-up.jpg',
   },
   {
     id: 'custom',
@@ -76,7 +76,7 @@ const storySteps = [
     icon: Palette,
     color: 'from-mint to-aqua',
     tagColor: 'tag-mint',
-    image: '/brand/instagram/ig-05.jpg',
+    image: '/brand/portfolio/ig-05-up.jpg',
   },
 ]
 

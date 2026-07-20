@@ -168,3 +168,14 @@ html[data-theme="light"] .btn-outline-mint {
   border-color: rgba(15, 118, 110, 0.25);
   background: rgba(142, 231, 210, 0.16);
 }
+
+
+/* Elegant motion defaults */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -12,7 +12,7 @@ export function Card({ className, children }) { return <div className={cn('glass
 export function Badge({ children, className }) { return <span className={cn('badge', className)}>{children}</span> }
 export function StatusBadge({ status }) { return <span className={cn('inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize', statusTone(status))}>{String(status || 'unknown').replaceAll('_',' ')}</span> }
 export function Reveal({ children, delay = 0, className }) {
-  return <motion.div className={className} initial={{ opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: .65, delay, ease: 'easeOut' }}>{children}</motion.div>
+  return <motion.div className={className} initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-10% 0px' }} transition={{ duration: .75, delay, ease: [0.22, 1, 0.36, 1] }}>{children}</motion.div>
 }
 export function EmptyState({ title='Belum ada data', text='Data akan tampil otomatis setelah backend terhubung.' }) {
   return <Card className="text-center"><p className="text-lg font-semibold text-cream">{title}</p><p className="subtle mt-2">{text}</p></Card>
