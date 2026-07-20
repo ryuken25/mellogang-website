@@ -4,9 +4,17 @@ import App from './App'
 import './index.css'
 
 try {
-  const savedTheme = localStorage.getItem('mellogang_theme') || 'dark'
-  document.documentElement.classList.toggle('dark', savedTheme !== 'light')
-  document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark'
-} catch { document.documentElement.classList.add('dark') }
+  // Keep the cream/light cinematic homepage style as default.
+  const savedTheme = localStorage.getItem('mellogang_theme') || 'light'
+  document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+  document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light'
+} catch {
+  document.documentElement.classList.remove('dark')
+  document.documentElement.dataset.theme = 'light'
+}
 
-createRoot(document.getElementById('root')).render(<React.StrictMode><App /></React.StrictMode>)
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+)
