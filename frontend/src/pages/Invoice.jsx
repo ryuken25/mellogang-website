@@ -15,7 +15,7 @@ function InvoiceEmpty({ title, text }) {
           <img
             src={brand.logo}
             alt="Mellogang Visuals"
-            className="mx-auto h-16 w-16 object-contain"
+            className="mx-auto h-16 w-16 rounded-3xl object-cover"
           />
           <h1 className="mt-6 text-3xl font-semibold text-cream light:text-charcoal">{title}</h1>
           <p className="subtle mx-auto mt-3 max-w-xl">{text}</p>
@@ -95,7 +95,7 @@ export default function Invoice() {
                 <img
                   src={brand.logo}
                   alt="Mellogang Visuals"
-                  className="h-16 w-16 object-contain"
+                  className="h-16 w-16 rounded-3xl border border-gold/30 object-cover"
                 />
                 <div>
                   <p className="text-xs uppercase tracking-[.34em] text-gold">{brand.name}</p>

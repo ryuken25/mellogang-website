@@ -5,7 +5,7 @@ export const brand = {
   positioning: 'Cinematic pastel visual studio for Bali weddings, ceremonies, and graduations.',
   description: 'Professional photo and video production for weddings, ceremonies, graduations, events, and creative stories in Bali.',
   location: 'Bali, Indonesia',
-  logo: '/brand/mellogang-logo.png',
+  logo: '/brand/mellogang-logo-new.svg',
   ogImage: '/brand/mellogang-og.jpg',
   linktree: 'https://linktr.ee/mellogangvisuals',
   instagram: 'https://www.instagram.com/mellogangvisuals/',
