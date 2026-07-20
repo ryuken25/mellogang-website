@@ -9,7 +9,7 @@ export default function WhatsAppFloat() {
       target="_blank"
       rel="noreferrer noopener"
       aria-label="Chat WhatsApp Mellogang Visuals +62 822-3600-4917"
-      className="group fixed bottom-5 right-5 z-[100] grid h-14 w-14 place-items-center rounded-full bg-[#25D366] shadow-[0_12px_40px_rgba(37,211,102,0.45)] transition hover:scale-105 hover:shadow-[0_16px_48px_rgba(37,211,102,0.55)] sm:bottom-6 sm:right-6 sm:h-16 sm:w-16"
+      className="group fixed bottom-8 right-8 z-[100] grid h-14 w-14 place-items-center rounded-full bg-[#25D366] shadow-[0_12px_40px_rgba(37,211,102,0.45)] transition hover:scale-105 hover:shadow-[0_16px_48px_rgba(37,211,102,0.55)] sm:bottom-10 sm:right-10 sm:h-16 sm:w-16"
     >
       <img
         src={brand.socialIcons.whatsappFloat || brand.socialIcons.whatsapp}

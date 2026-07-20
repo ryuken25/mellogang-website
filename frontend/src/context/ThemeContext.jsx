@@ -11,20 +11,20 @@ function applyTheme(theme) {
 }
 
 export function ThemeProvider({ children }) {
-  // Default to light/cream cinematic style (current brand homepage).
-  const [theme, setThemeState] = useState('light')
+  // Default dark cinematic (cream/light text contrast is poor on some sections).
+  const [theme, setThemeState] = useState('dark')
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY) || 'light'
-    const next = saved === 'dark' ? 'dark' : 'light'
+    const saved = localStorage.getItem(THEME_KEY) || 'dark'
+    const next = saved === 'light' ? 'light' : 'dark'
     setThemeState(next)
     applyTheme(next)
     setIsHydrated(true)
   }, [])
 
   const setTheme = (next) => {
-    const value = next === 'dark' ? 'dark' : 'light'
+    const value = next === 'light' ? 'light' : 'dark'
     setThemeState(value)
     localStorage.setItem(THEME_KEY, value)
     applyTheme(value)

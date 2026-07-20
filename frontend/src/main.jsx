@@ -4,13 +4,13 @@ import App from './App'
 import './index.css'
 
 try {
-  // Keep the cream/light cinematic homepage style as default.
-  const savedTheme = localStorage.getItem('mellogang_theme') || 'light'
-  document.documentElement.classList.toggle('dark', savedTheme === 'dark')
-  document.documentElement.dataset.theme = savedTheme === 'dark' ? 'dark' : 'light'
+  // Default dark cinematic theme (best contrast for brand UI).
+  const savedTheme = localStorage.getItem('mellogang_theme') || 'dark'
+  document.documentElement.classList.toggle('dark', savedTheme !== 'light')
+  document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark'
 } catch {
-  document.documentElement.classList.remove('dark')
-  document.documentElement.dataset.theme = 'light'
+  document.documentElement.classList.add('dark')
+  document.documentElement.dataset.theme = 'dark'
 }
 
 createRoot(document.getElementById('root')).render(
