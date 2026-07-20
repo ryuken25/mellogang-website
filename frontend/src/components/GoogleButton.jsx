@@ -10,6 +10,6 @@ export default function GoogleButton(){
     <button type="button" disabled={disabled||loading} onClick={()=>{ if(!googleUrl) return; setLoading(true); window.location.href=googleUrl }} className="btn-secondary w-full disabled:cursor-not-allowed disabled:opacity-55">
       {loading ? <Loader2 className="animate-spin" size={16}/> : <span className="grid h-5 w-5 place-items-center rounded-full bg-white text-xs font-bold text-black">G</span>} Continue with Google
     </button>
-    {disabled && <p className="mt-2 text-center text-xs text-cream/45">Google login requires backend connection.</p>}
+    {disabled && <p className="mt-2 text-center text-xs text-cream/45 light:text-black/45">Google login requires backend connection.</p>}
   </div>
 }

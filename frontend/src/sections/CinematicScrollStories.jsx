@@ -17,7 +17,7 @@ function Chapter({ chapter, index, lite }) {
       className="relative min-h-[100dvh] overflow-hidden border-b border-white/5"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 100svh' }}
     >
-      <div className="absolute inset-0 will-change-transform">
+      <div className="on-media absolute inset-0 will-change-transform">
         <img
           src={chapter.image}
           alt={chapter.title}
@@ -89,7 +89,7 @@ export default function CinematicScrollStories() {
   }, [profile.lite])
 
   return (
-    <div ref={rootRef} className="relative bg-ink">
+    <div ref={rootRef} className="relative bg-page">
       {/* mobile progress chips */}
       <div className="sticky top-16 sm:top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md light:border-black/10 light:bg-[#fff7ea]/90 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto no-scrollbar">
