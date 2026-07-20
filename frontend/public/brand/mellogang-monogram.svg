@@ -1,43 +1,50 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!--
+    Mellogang monogram (clean):
+    - Not classic full-peak M |\/|
+    - Form is |v|  : two tall stems + short center V
+    - Then another V sits under that short center V  => reads like M + V stacked
+  -->
   <defs>
-    <linearGradient id="gold" x1="180" y1="160" x2="840" y2="880" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#F3D7A0"/>
-      <stop offset="35%" stop-color="#D7B06A"/>
-      <stop offset="70%" stop-color="#C49A4E"/>
+    <linearGradient id="gold" x1="220" y1="180" x2="800" y2="860" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#F2D59A"/>
+      <stop offset="40%" stop-color="#D4B06A"/>
       <stop offset="100%" stop-color="#A67C35"/>
     </linearGradient>
-    <linearGradient id="goldSoft" x1="260" y1="200" x2="760" y2="820" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#FFE7B8"/>
-      <stop offset="50%" stop-color="#E0B86A"/>
-      <stop offset="100%" stop-color="#B8893D"/>
-    </linearGradient>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="b"/>
-      <feMerge>
-        <feMergeNode in="b"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Transparent background intentionally empty -->
+  <!-- Transparent canvas -->
 
-  <!-- Clean geometric M with integrated bottom chevron (monoline, thick, sharp) -->
-  <g filter="url(#soft)" stroke="url(#gold)" stroke-width="96" stroke-linecap="butt" stroke-linejoin="miter" fill="none">
-    <!-- Outer M: left leg, left peak, right peak, right leg -->
-    <path d="M250 760
-             V250
-             L512 620
-             L774 250
-             V760"/>
+  <g fill="url(#gold)" stroke="none">
+    <!-- Left stem -->
+    <rect x="268" y="190" width="92" height="560" rx="34"/>
+    <!-- Right stem -->
+    <rect x="664" y="190" width="92" height="560" rx="34"/>
+
+    <!-- Short center V of the M (hangs between stems, NOT full-height peaks) -->
+    <!-- Made as thick chevron using a solid path -->
+    <path d="
+      M 360 250
+      L 512 470
+      L 664 250
+      L 604 250
+      L 512 390
+      L 420 250
+      Z
+    "/>
+
+    <!-- Small stem tip under the short V (optional bridge into lower V) -->
+    <rect x="472" y="455" width="80" height="70" rx="28"/>
+
+    <!-- Lower V under the short M-V (the "V" of MV stacked under M) -->
+    <path d="
+      M 360 560
+      L 512 820
+      L 664 560
+      L 600 560
+      L 512 720
+      L 424 560
+      Z
+    "/>
   </g>
-
-  <!-- Bottom chevron / arrow head under the M valley -->
-  <path d="M320 690 L512 870 L704 690"
-        stroke="url(#goldSoft)"
-        stroke-width="88"
-        stroke-linecap="butt"
-        stroke-linejoin="miter"
-        fill="none"
-        filter="url(#soft)"/>
 </svg>
