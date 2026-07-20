@@ -181,6 +181,112 @@ html[data-theme="light"] .btn-outline-mint {
 }
 
 
+
+/* ---- Clickable theme consistency (light + dark) ---- */
+a, button, [role="button"], summary {
+  color: inherit;
+}
+.btn-primary {
+  color: #101417 !important; /* always dark text on gold */
+}
+.btn-primary:hover {
+  color: #101417 !important;
+}
+.btn-secondary {
+  color: rgb(var(--cream));
+}
+html[data-theme="light"] .btn-secondary {
+  color: #101417;
+}
+html[data-theme="light"] .btn-primary {
+  color: #101417 !important;
+}
+
+/* Generic interactive surfaces */
+html[data-theme="light"] a:not(.btn-primary):not(.btn-secondary):not(.btn-outline-mint) {
+  color: inherit;
+}
+html[data-theme="light"] .text-cream\/35,
+html[data-theme="light"] .text-cream\/40,
+html[data-theme="light"] .text-cream\/45,
+html[data-theme="light"] .text-cream\/50,
+html[data-theme="light"] .text-cream\/55,
+html[data-theme="light"] .text-cream\/60,
+html[data-theme="light"] .text-cream\/65,
+html[data-theme="light"] .text-cream\/70,
+html[data-theme="light"] .text-cream\/75,
+html[data-theme="light"] .text-cream\/80 {
+  /* cream token already remaps; keep opacity readable on light bg */
+}
+
+/* Clickable chips / icon buttons */
+html[data-theme="light"] .bg-white\/5,
+html[data-theme="light"] .bg-white\/\[\.045\],
+html[data-theme="light"] .bg-white\/\[\.055\],
+html[data-theme="light"] .bg-white\/\[\.06\],
+html[data-theme="light"] .bg-white\/\[\.03\],
+html[data-theme="light"] .bg-white\/8 {
+  background-color: rgba(16, 20, 23, 0.04) !important;
+}
+html[data-theme="light"] .hover\:bg-white\/5:hover,
+html[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: rgba(16, 20, 23, 0.06) !important;
+}
+html[data-theme="light"] .border-white\/10,
+html[data-theme="light"] .border-white\/15 {
+  border-color: rgba(16, 20, 23, 0.10) !important;
+}
+html[data-theme="light"] .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(16, 20, 23, 0.10);
+}
+
+/* Nav / menu / dropdown text */
+html[data-theme="light"] header button,
+html[data-theme="light"] header a,
+html[data-theme="light"] footer a,
+html[data-theme="light"] footer button {
+  color: inherit;
+}
+html[data-theme="light"] .text-red-200 {
+  color: #b91c1c;
+}
+
+/* Focus ring for accessibility on both themes */
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid rgba(244, 200, 117, 0.85);
+  outline-offset: 2px;
+}
+
+/* Active/pressed state for clickables */
+@media (pointer: coarse) {
+  .btn-primary:active,
+  .btn-secondary:active,
+  .btn-outline-mint:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Dashboard / tables on light */
+html[data-theme="light"] table thead {
+  color: rgba(16, 20, 23, 0.45);
+}
+html[data-theme="light"] .divide-y {
+  --tw-divide-opacity: 1;
+}
+
+/* Sticky mobile chapter chips (scroll stories) */
+html[data-theme="light"] .bg-ink\/70 {
+  background-color: rgba(255, 247, 234, 0.88) !important;
+}
+html[data-theme="light"] .bg-ink\/75 {
+  background-color: rgba(255, 247, 234, 0.90) !important;
+}
+
 /* Android / touch motion polish */
 html, body {
   -webkit-font-smoothing: antialiased;

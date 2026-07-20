@@ -6,7 +6,7 @@ export function SectionHeader({ eyebrow, title, children, center = false }) {
   return (
     <div className={cn('mb-10 max-w-3xl', center && 'mx-auto text-center')}>
       <p className="eyebrow">{eyebrow}</p>
-      <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-cream sm:text-5xl">{title}</h2>
+      <h2 className="mt-4 text-3xl font-semibold tracking-[-0.035em] text-cream light:text-charcoal sm:text-5xl">{title}</h2>
       {children && <p className="subtle mt-5">{children}</p>}
     </div>
   )
@@ -41,7 +41,7 @@ export function Reveal({ children, delay = 0, className }) {
 export function EmptyState({ title = 'Belum ada data', text = 'Data akan tampil otomatis setelah backend terhubung.' }) {
   return (
     <Card className="text-center">
-      <p className="text-lg font-semibold text-cream">{title}</p>
+      <p className="text-lg font-semibold text-cream light:text-charcoal">{title}</p>
       <p className="subtle mt-2">{text}</p>
     </Card>
   )

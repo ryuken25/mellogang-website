@@ -9,7 +9,7 @@ export default function InstagramShowcase({ items, onOpen }) {
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="eyebrow">Latest Frames from Instagram</p>
-            <h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] text-cream sm:text-5xl">
+            <h2 className="mt-4 text-4xl font-semibold tracking-[-.04em] text-cream light:text-charcoal sm:text-5xl">
               Recent visual moments.
             </h2>
           </div>

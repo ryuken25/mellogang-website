@@ -91,7 +91,7 @@ export default function CinematicScrollStories() {
   return (
     <div ref={rootRef} className="relative bg-ink">
       {/* mobile progress chips */}
-      <div className="sticky top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md lg:hidden">
+      <div className="sticky top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md light:border-black/10 light:bg-[#fff7ea]/90 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto no-scrollbar">
           {chapters.map((c, i) => (
             <button
@@ -103,7 +103,7 @@ export default function CinematicScrollStories() {
               }}
               className={cn(
                 'shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide transition',
-                i === active ? 'bg-gold text-ink' : 'bg-white/8 text-cream/60'
+                i === active ? 'bg-gold text-ink' : 'bg-white/8 text-cream/60 light:bg-black/5 light:text-black/60'
               )}
             >
               {c.eyebrow.replace('Chapter ', 'Ch ')}

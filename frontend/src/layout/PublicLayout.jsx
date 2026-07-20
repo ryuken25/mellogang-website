@@ -52,13 +52,13 @@ function UserMenu() {
           <b className="block truncate text-sm text-cream light:text-charcoal">{user.name || user.email}</b>
           <small className="block truncate text-cream/45 light:text-black/45">{user.email}</small>
         </span>
-        <ChevronDown size={16} />
+        <ChevronDown size={16} className="text-cream/60 light:text-black/55" />
       </button>
       {open && (
         <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-3xl border border-white/10 bg-[#0d1110]/95 p-2 shadow-2xl backdrop-blur-xl light:bg-[#fffaf0]/95">
-          <button onClick={() => go('/profile')} className="w-full rounded-2xl px-4 py-3 text-left text-sm hover:bg-white/10 light:hover:bg-black/5">Profile</button>
-          <button onClick={() => go('/profile/edit')} className="w-full rounded-2xl px-4 py-3 text-left text-sm hover:bg-white/10 light:hover:bg-black/5">Edit Profile</button>
-          <button onClick={() => go('/status')} className="w-full rounded-2xl px-4 py-3 text-left text-sm hover:bg-white/10 light:hover:bg-black/5">Status Pesanan</button>
+          <button onClick={() => go('/profile')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Profile</button>
+          <button onClick={() => go('/profile/edit')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Edit Profile</button>
+          <button onClick={() => go('/status')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Status Pesanan</button>
           <div className="px-2 py-2"><ThemeToggle /></div>
           <button
             onClick={() => {
@@ -66,7 +66,7 @@ function UserMenu() {
               setOpen(false)
               navigate('/')
             }}
-            className="flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left text-sm text-red-200 hover:bg-red-500/10"
+            className="flex w-full items-center gap-2 rounded-2xl px-4 py-3 text-left text-sm text-red-200 hover:bg-red-500/10 light:text-red-600"
           >
             <LogOut size={16} />Logout
           </button>
