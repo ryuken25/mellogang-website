@@ -1,50 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
-  <!--
-    Mellogang monogram (clean):
-    - Not classic full-peak M |\/|
-    - Form is |v|  : two tall stems + short center V
-    - Then another V sits under that short center V  => reads like M + V stacked
-  -->
   <defs>
-    <linearGradient id="gold" x1="220" y1="180" x2="800" y2="860" gradientUnits="userSpaceOnUse">
+    <linearGradient id="g" x1="240" y1="180" x2="800" y2="880" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="#F2D59A"/>
       <stop offset="40%" stop-color="#D4B06A"/>
       <stop offset="100%" stop-color="#A67C35"/>
     </linearGradient>
   </defs>
-
-  <!-- Transparent canvas -->
-
-  <g fill="url(#gold)" stroke="none">
-    <!-- Left stem -->
-    <rect x="268" y="190" width="92" height="560" rx="34"/>
-    <!-- Right stem -->
-    <rect x="664" y="190" width="92" height="560" rx="34"/>
-
-    <!-- Short center V of the M (hangs between stems, NOT full-height peaks) -->
-    <!-- Made as thick chevron using a solid path -->
-    <path d="
-      M 360 250
-      L 512 470
-      L 664 250
-      L 604 250
-      L 512 390
-      L 420 250
-      Z
-    "/>
-
-    <!-- Small stem tip under the short V (optional bridge into lower V) -->
-    <rect x="472" y="455" width="80" height="70" rx="28"/>
-
-    <!-- Lower V under the short M-V (the "V" of MV stacked under M) -->
-    <path d="
-      M 360 560
-      L 512 820
-      L 664 560
-      L 600 560
-      L 512 720
-      L 424 560
-      Z
-    "/>
+  <g fill="none" stroke="url(#g)" stroke-width="108" stroke-linecap="round" stroke-linejoin="round">
+    <!-- left stem -->
+    <path d="M300 250 V640"/>
+    <!-- right stem -->
+    <path d="M724 250 V640"/>
+    <!-- upper V connected near top corners -->
+    <path d="M300 270 H390 L512 390 L634 270 H724"/>
+    <!-- lower V higher -->
+    <path d="M300 500 H390 L512 780 L634 500 H724"/>
   </g>
+  <!-- center knob under upper V tip -->
+  <circle cx="512" cy="430" r="52" fill="url(#g)"/>
 </svg>
