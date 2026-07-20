@@ -4,13 +4,14 @@ import App from './App'
 import './index.css'
 
 try {
-  // Default dark cinematic theme (best contrast for brand UI).
-  const savedTheme = localStorage.getItem('mellogang_theme') || 'dark'
-  document.documentElement.classList.toggle('dark', savedTheme !== 'light')
-  document.documentElement.dataset.theme = savedTheme === 'light' ? 'light' : 'dark'
+  // Cream/light is the brand homepage default; contrast is fixed via CSS tokens.
+  const savedTheme = localStorage.getItem('mellogang_theme') || 'light'
+  const isDark = savedTheme === 'dark'
+  document.documentElement.classList.toggle('dark', isDark)
+  document.documentElement.dataset.theme = isDark ? 'dark' : 'light'
 } catch {
-  document.documentElement.classList.add('dark')
-  document.documentElement.dataset.theme = 'dark'
+  document.documentElement.classList.remove('dark')
+  document.documentElement.dataset.theme = 'light'
 }
 
 createRoot(document.getElementById('root')).render(

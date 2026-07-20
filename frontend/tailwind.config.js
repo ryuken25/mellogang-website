@@ -8,7 +8,8 @@ export default {
         ink: '#101417',
         charcoal: '#1a1e22',
         smoke: '#15191d',
-        cream: '#fff4e6',
+        // Theme-aware primary text color (cream on dark, charcoal on light)
+        cream: 'rgb(var(--cream) / <alpha-value>)',
         gold: '#f4c875',
         amberglow: '#ffe0a0',
         mint: '#b8f3e6',

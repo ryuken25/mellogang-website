@@ -5,26 +5,27 @@ const THEME_KEY = 'mellogang_theme'
 
 function applyTheme(theme) {
   const root = document.documentElement
+  // Keep class "dark" only for true dark mode. Cream/light uses data-theme=light.
   root.classList.toggle('dark', theme === 'dark')
   root.dataset.theme = theme
   root.style.colorScheme = theme
 }
 
 export function ThemeProvider({ children }) {
-  // Default dark cinematic (cream/light text contrast is poor on some sections).
-  const [theme, setThemeState] = useState('dark')
+  // Default cream/light brand homepage style (with fixed contrast tokens).
+  const [theme, setThemeState] = useState('light')
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem(THEME_KEY) || 'dark'
-    const next = saved === 'light' ? 'light' : 'dark'
+    const saved = localStorage.getItem(THEME_KEY) || 'light'
+    const next = saved === 'dark' ? 'dark' : 'light'
     setThemeState(next)
     applyTheme(next)
     setIsHydrated(true)
   }, [])
 
   const setTheme = (next) => {
-    const value = next === 'light' ? 'light' : 'dark'
+    const value = next === 'dark' ? 'dark' : 'light'
     setThemeState(value)
     localStorage.setItem(THEME_KEY, value)
     applyTheme(value)
