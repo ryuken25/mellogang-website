@@ -14,7 +14,7 @@ function Chapter({ chapter, index, lite }) {
   return (
     <section
       ref={ref}
-      className="relative min-h-[100svh] overflow-hidden border-b border-white/5"
+      className="relative min-h-[100dvh] overflow-hidden border-b border-white/5"
       style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 100svh' }}
     >
       <div className="absolute inset-0 will-change-transform">
@@ -32,7 +32,7 @@ function Chapter({ chapter, index, lite }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
       </div>
 
-      <div className="container-premium relative z-10 flex min-h-[100svh] items-end py-16 sm:items-center sm:py-24">
+      <div className="container-premium relative z-10 flex min-h-[100dvh] items-end py-16 sm:items-center sm:py-24">
         <motion.div
           initial={false}
           animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.5, y: lite ? 12 : 24 }}
@@ -91,7 +91,7 @@ export default function CinematicScrollStories() {
   return (
     <div ref={rootRef} className="relative bg-ink">
       {/* mobile progress chips */}
-      <div className="sticky top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md light:border-black/10 light:bg-[#fff7ea]/90 lg:hidden">
+      <div className="sticky top-16 sm:top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md light:border-black/10 light:bg-[#fff7ea]/90 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto no-scrollbar">
           {chapters.map((c, i) => (
             <button

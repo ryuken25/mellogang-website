@@ -4,7 +4,7 @@ import { cn } from '../../lib/utils'
 
 export default function PortfolioFilters({ active, onChange }) {
   return (
-    <div className="sticky top-20 z-30 -mx-4 mb-10 overflow-x-auto border-y border-white/10 bg-ink/75 px-4 py-3 backdrop-blur-2xl light:border-black/10 light:bg-[#fff7ea]/90 sm:mx-0 sm:rounded-full sm:border sm:px-3">
+    <div className="sticky top-16 z-30 sm:top-20 -mx-4 mb-10 overflow-x-auto border-y border-white/10 bg-ink/75 px-4 py-3 backdrop-blur-2xl light:border-black/10 light:bg-[#fff7ea]/90 sm:mx-0 sm:rounded-full sm:border sm:px-3">
       <div className="flex min-w-max gap-2">
         {portfolioFilters.map((filter) => {
           const isActive = active === filter

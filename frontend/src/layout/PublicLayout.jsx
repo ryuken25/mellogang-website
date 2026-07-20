@@ -84,7 +84,7 @@ export default function PublicLayout() {
   return (
     <div className="min-h-screen">
       <header className="sticky top-0 z-50 border-b border-white/10 bg-ink/70 backdrop-blur-2xl light:border-black/10 light:bg-[#fff7ea]/80">
-        <div className="container-premium flex h-20 items-center justify-between">
+        <div className="container-premium flex h-16 items-center justify-between sm:h-20">
           <Link to="/" className="relative flex items-center pr-2" aria-label="Mellogang Visuals home">
             <BrandLogo className="h-11 w-11 sm:h-12 sm:w-12" showWordmark />
           </Link>
@@ -117,13 +117,13 @@ export default function PublicLayout() {
             </a>
           </div>
 
-          <button className="text-cream light:text-charcoal lg:hidden" onClick={() => setOpen(!open)}>
+          <button className="grid h-11 w-11 place-items-center rounded-full border border-white/10 bg-white/5 text-cream light:border-black/10 light:bg-black/5 light:text-charcoal lg:hidden" onClick={() => setOpen(!open)}>
             <Menu />
           </button>
         </div>
 
         {open && (
-          <div className="container-premium pb-5 lg:hidden">
+          <div className="container-premium border-t border-white/10 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2 light:border-black/10 lg:hidden">
             {nav.map(([href, label]) => (
               <NavLink
                 onClick={() => setOpen(false)}

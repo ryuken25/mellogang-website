@@ -2,13 +2,14 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { useMotionProfile } from '../hooks/useMotionProfile'
+import PortfolioModal from '../components/portfolio/PortfolioModal'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   ArrowRight, CalendarCheck, CheckCircle2, Clapperboard, Film, MessageCircle,
   PackageCheck, Upload, Wand2, Camera, Heart, GraduationCap, PartyPopper,
   Palette, ChevronLeft, ChevronRight, Star, Clock, Shield, Sparkles,
-  HelpCircle, ChevronDown, X, Play
+  HelpCircle, ChevronDown, Play
 } from 'lucide-react'
 import { Card, Reveal, SectionHeader } from '../components/ui'
 import { services, packages } from '../data/mockData'
@@ -215,77 +216,12 @@ export function SelectedVisualStories() {
         </div>
       </div>
 
-      {/* Portfolio Modal */}
-      <AnimatePresence>
-        {modalItem && (
-          <motion.div
-            className="fixed inset-0 z-[90] grid place-items-center overflow-y-auto bg-black/82 p-3 backdrop-blur-2xl"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setModalItem(null)}
-          >
-            <motion.div
-              className="safe-modal relative w-full max-w-5xl overflow-hidden rounded-[1.5rem] border border-white/10 bg-charcoal shadow-2xl sm:rounded-[2rem]"
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <button
-                className="absolute right-4 top-4 z-10 rounded-full bg-black/65 p-3 text-white backdrop-blur-xl hover:bg-black/80"
-                onClick={() => setModalItem(null)}
-              >
-                <X size={18} />
-              </button>
-              <div className="grid max-h-[92svh] min-h-0 lg:grid-cols-[1.25fr_.75fr]">
-                <div className="min-h-[220px] bg-black sm:min-h-[300px]">
-                  {modalItem.type === 'youtube' && modalItem.embedUrl ? (
-                    <iframe
-                      className="aspect-video h-full min-h-[300px] w-full"
-                      src={modalItem.embedUrl}
-                      title={modalItem.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <img
-                      className="h-full max-h-[42svh] w-full object-cover lg:max-h-[80vh]"
-                      src={modalItem.thumbnail}
-                      alt={modalItem.title}
-                      style={{ objectPosition: modalItem.objectPosition }}
-                    />
-                  )}
-                </div>
-                <div className="min-h-0 overflow-y-auto p-5 sm:p-8 lg:max-h-[80vh]">
-                  <p className="eyebrow">{modalItem.source} · {modalItem.category}</p>
-                  <h3 className="mt-4 text-2xl font-semibold tracking-[-.04em] text-cream sm:text-3xl">{modalItem.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-cream/68">{modalItem.description}</p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {modalItem.tags?.map(t => <span key={t} className="badge">{t}</span>)}
-                  </div>
-                  <div className="mt-6 flex flex-col gap-3">
-                    <a className="btn-primary" href={modalItem.url} target="_blank" rel="noreferrer">
-                      {modalItem.source === 'YouTube' ? 'Watch on YouTube' : 'View on Instagram'} <ArrowRight size={16} />
-                    </a>
-                    <a className="btn-secondary" href={brand.whatsapp} target="_blank" rel="noreferrer">
-                      <MessageCircle size={16} /> Book Similar Concept
-                    </a>
-                  </div>
-                  <div className="mt-6 grid grid-cols-2 gap-3">
-                    <button className="btn-secondary" onClick={() => navigateModal(-1)}>
-                      <ChevronLeft size={16} /> Prev
-                    </button>
-                    <button className="btn-secondary" onClick={() => navigateModal(1)}>
-                      Next <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Portfolio Modal — shared theme-aware mobile sheet */}
+      <PortfolioModal
+        item={modalItem}
+        onClose={() => setModalItem(null)}
+        onNavigate={navigateModal}
+      />
     </section>
   )
 }

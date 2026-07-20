@@ -320,3 +320,100 @@ html, body {
     letter-spacing: -0.03em;
   }
 }
+
+
+/* ---- Modal + mobile shell polish (Android / Poco F6 friendly) ---- */
+html, body, #root {
+  min-height: 100%;
+  min-height: 100dvh;
+}
+body {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+html.modal-open,
+html.modal-open body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  touch-action: none;
+}
+.safe-modal {
+  max-height: min(94dvh, 940px);
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Compact sticky header on phones */
+@media (max-width: 1023px) {
+  .container-premium {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  header.sticky > .container-premium {
+    height: 4rem; /* was h-20 */
+  }
+  header.sticky {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .section-pad {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+  .headline {
+    font-size: clamp(1.85rem, 7.2vw, 2.6rem);
+    line-height: 1.08;
+  }
+  /* Avoid giant type crushing layout */
+  .font-display.text-5xl,
+  .text-5xl {
+    font-size: clamp(1.9rem, 7vw, 2.75rem) !important;
+    line-height: 1.1 !important;
+  }
+  .text-6xl, .sm\:text-6xl {
+    font-size: clamp(2rem, 7.5vw, 3rem) !important;
+  }
+  /* Cards denser on mobile */
+  .glass, .glass-strong {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  /* Horizontal carousels need edge padding without clipping */
+  .no-scrollbar {
+    scroll-padding-inline: 1rem;
+  }
+  /* Floating WA clear of home indicator */
+  a[aria-label="Chat on WhatsApp"],
+  a[href*="wa.me"][class*="fixed"] {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom)) !important;
+    right: calc(1rem + env(safe-area-inset-right)) !important;
+  }
+}
+
+/* Reduce expensive effects on coarse/Android */
+@media (pointer: coarse) {
+  header.sticky,
+  .glass,
+  .glass-strong,
+  .backdrop-blur-2xl,
+  .backdrop-blur-xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  /* sticky filter bar shouldn't jump under notch/header */
+  .sticky.top-20 {
+    top: 4.25rem;
+  }
+}
+
+/* Light theme modal surfaces already handled in component classes;
+   ensure generic dark hardcodes don't leak on light */
+html[data-theme="light"] .bg-\[\#090909\],
+html[data-theme="light"] .bg-\[\#0d1110\] {
+  background-color: #fffaf3 !important;
+  color: #1a1e22;
+}
+html[data-theme="light"] .bg-charcoal {
+  background-color: #fffaf3 !important;
+}
