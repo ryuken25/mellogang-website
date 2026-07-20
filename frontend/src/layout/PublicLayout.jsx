@@ -55,7 +55,7 @@ function UserMenu() {
         <ChevronDown size={16} className="text-cream/60 light:text-black/55" />
       </button>
       {open && (
-        <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-3xl border border-white/10 bg-[#0d1110]/95 p-2 shadow-2xl backdrop-blur-xl light:bg-[#fffaf0]/95">
+        <div className="absolute right-0 mt-3 w-64 overflow-hidden rounded-3xl border border-white/10 bg-panel p-2 shadow-2xl backdrop-blur-xl light:border-black/10">
           <button onClick={() => go('/profile')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Profile</button>
           <button onClick={() => go('/profile/edit')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Edit Profile</button>
           <button onClick={() => go('/status')} className="w-full rounded-2xl px-4 py-3 text-left text-sm text-cream light:text-charcoal hover:bg-white/10 light:hover:bg-black/5">Status Pesanan</button>
@@ -83,7 +83,7 @@ export default function PublicLayout() {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-ink/70 backdrop-blur-2xl light:border-black/10 light:bg-[#fff7ea]/80">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-page/80 backdrop-blur-2xl light:border-black/10">
         <div className="container-premium flex h-16 items-center justify-between sm:h-20">
           <Link to="/" className="relative flex items-center pr-2" aria-label="Mellogang Visuals home">
             <BrandLogo className="h-11 w-11 sm:h-12 sm:w-12" showWordmark />

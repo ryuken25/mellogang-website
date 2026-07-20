@@ -34,7 +34,7 @@ export default function PortfolioModal({ item, onClose, onNavigate }) {
       aria-label={item.title}
     >
       <div
-        className="safe-modal relative flex max-h-[min(94dvh,940px)] w-full max-w-6xl flex-col overflow-hidden rounded-t-[1.5rem] border border-white/10 bg-[#0d1110] text-cream shadow-2xl sm:rounded-[2rem] light:border-black/10 light:bg-[#fffaf3] light:text-charcoal"
+        className="safe-modal relative flex max-h-[min(94dvh,940px)] w-full max-w-6xl flex-col overflow-hidden rounded-t-[1.5rem] border border-white/10 bg-panel text-cream shadow-2xl sm:rounded-[2rem] light:border-black/10 light:text-charcoal"
         onClick={(e) => e.stopPropagation()}
       >
         <button

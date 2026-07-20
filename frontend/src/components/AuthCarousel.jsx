@@ -4,15 +4,89 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { portfolioItems } from '../data/portfolioData'
 import SmartImage from './SmartImage'
 
-const slides = portfolioItems.filter(i => i.source === 'Instagram').slice(0,6).map(i => ({ image:i.thumbnail, title:i.title, text:i.description, objectPosition:i.objectPosition }))
-export default function AuthCarousel(){
-  const [index,setIndex]=useState(0), [paused,setPaused]=useState(false)
-  useEffect(()=>{ if(paused) return; const id=setInterval(()=>setIndex(i=>(i+1)%slides.length),5500); return()=>clearInterval(id)},[paused])
-  const slide=slides[index]
-  return <div onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} className="relative hidden min-h-screen overflow-hidden bg-black lg:block">
-    <AnimatePresence mode="wait"><motion.div key={slide.image} className="absolute inset-0" initial={{opacity:0,scale:1.02}} animate={{opacity:1,scale:1}} exit={{opacity:0}} transition={{duration:.7}}><SmartImage src={slide.image} alt={slide.title} objectPosition={slide.objectPosition}/></motion.div></AnimatePresence>
-    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10" />
-    <div className="absolute left-10 right-10 top-10 flex items-center justify-between"><span className="badge border-gold/20 bg-black/35 text-gold">Cinematic Client Workspace</span><span className="text-sm text-white/55">{String(index+1).padStart(2,'0')} / {String(slides.length).padStart(2,'0')}</span></div>
-    <div className="absolute bottom-12 left-10 right-10"><motion.div key={slide.title} initial={{opacity:0,y:20}} animate={{opacity:1,y:0}}><p className="eyebrow">Mellogang Visuals</p><h1 className="mt-4 max-w-xl text-5xl font-semibold tracking-[-.05em] text-white">{slide.title}</h1><p className="mt-4 max-w-xl text-white/70">{slide.text}</p></motion.div><div className="mt-8 flex items-center justify-between"><div className="flex gap-2">{slides.map((_,i)=><button key={i} onClick={()=>setIndex(i)} className={`h-2 rounded-full transition ${i===index?'w-10 bg-gold':'w-2 bg-white/35'}`}/>)}</div><div className="flex gap-2"><button className="rounded-full bg-white/10 p-3" onClick={()=>setIndex((index-1+slides.length)%slides.length)}><ChevronLeft/></button><button className="rounded-full bg-white/10 p-3" onClick={()=>setIndex((index+1)%slides.length)}><ChevronRight/></button></div></div></div>
-  </div>
+const slides = portfolioItems
+  .filter((i) => i.source === 'Instagram')
+  .slice(0, 6)
+  .map((i) => ({
+    image: i.thumbnail,
+    title: i.title,
+    text: i.description,
+    objectPosition: i.objectPosition,
+  }))
+
+export default function AuthCarousel() {
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    if (paused || !slides.length) return undefined
+    const id = setInterval(() => setIndex((i) => (i + 1) % slides.length), 5500)
+    return () => clearInterval(id)
+  }, [paused])
+
+  if (!slides.length) return <div className="relative hidden min-h-screen bg-black lg:block" />
+  const slide = slides[index]
+
+  return (
+    <div
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      className="on-media relative hidden min-h-screen overflow-hidden bg-black lg:block"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={slide.image}
+          className="absolute inset-0"
+          initial={{ opacity: 0, scale: 1.02 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.7 }}
+        >
+          <SmartImage src={slide.image} alt={slide.title} objectPosition={slide.objectPosition} />
+        </motion.div>
+      </AnimatePresence>
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/45 to-black/10" />
+      <div className="absolute left-10 right-10 top-10 flex items-center justify-between">
+        <span className="badge border-gold/20 bg-black/35 text-gold">Cinematic Client Workspace</span>
+        <span className="text-sm text-white/55">
+          {String(index + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
+        </span>
+      </div>
+      <div className="absolute bottom-12 left-10 right-10">
+        <motion.div key={slide.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <p className="eyebrow">Mellogang Visuals</p>
+          <h1 className="mt-4 max-w-xl text-5xl font-semibold tracking-[-.05em] text-white">{slide.title}</h1>
+          <p className="mt-4 max-w-xl text-white/70">{slide.text}</p>
+        </motion.div>
+        <div className="mt-8 flex items-center justify-between">
+          <div className="flex gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setIndex(i)}
+                className={`h-2 rounded-full transition ${i === index ? 'w-10 bg-gold' : 'w-2 bg-white/35'}`}
+              />
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="rounded-full bg-white/10 p-3 text-white"
+              onClick={() => setIndex((index - 1 + slides.length) % slides.length)}
+            >
+              <ChevronLeft />
+            </button>
+            <button
+              type="button"
+              className="rounded-full bg-white/10 p-3 text-white"
+              onClick={() => setIndex((index + 1) % slides.length)}
+            >
+              <ChevronRight />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }

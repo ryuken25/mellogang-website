@@ -9,6 +9,9 @@ function applyTheme(theme) {
   root.classList.toggle('dark', theme === 'dark')
   root.dataset.theme = theme
   root.style.colorScheme = theme
+  // Keep browser chrome in sync with page theme (auth + home).
+  const meta = document.querySelector('meta[name="theme-color"]:not([media])') || document.querySelector('meta[name="theme-color"]')
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#101417' : '#fff8f0')
 }
 
 export function ThemeProvider({ children }) {

@@ -86,7 +86,7 @@ export default function Invoice() {
           Login → Status Pesanan → Lihat Invoice.
         </SectionHeader>
 
-        <div className="overflow-hidden rounded-[2.2rem] border border-gold/20 bg-[#07100e] text-cream shadow-soft light:bg-[#fffaf0] light:text-charcoal print:bg-white print:text-black">
+        <div className="overflow-hidden rounded-[2.2rem] border border-gold/20 bg-panel text-cream shadow-soft light:text-charcoal print:bg-white print:text-black">
           <div className="relative overflow-hidden p-6 sm:p-10">
             <div className="absolute right-0 top-0 h-64 w-64 rounded-full bg-gold/15 blur-3xl" />
 

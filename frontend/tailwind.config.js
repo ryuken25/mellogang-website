@@ -5,10 +5,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Always-dark brand ink (for text on gold buttons etc.)
         ink: '#101417',
         charcoal: '#1a1e22',
         smoke: '#15191d',
-        // Theme-aware primary text color (cream on dark, charcoal on light)
+        // Theme-aware page canvas
+        page: 'rgb(var(--page-bg) / <alpha-value>)',
+        panel: 'rgb(var(--panel) / <alpha-value>)',
+        // Theme-aware primary text (cream on dark, charcoal on light)
         cream: 'rgb(var(--cream) / <alpha-value>)',
         gold: '#f4c875',
         amberglow: '#ffe0a0',
@@ -28,11 +32,10 @@ export default {
         soft: '0 24px 80px rgba(0, 0, 0, 0.38)',
       },
       backgroundImage: {
-        'studio-grid': 'linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px)',
+        'studio-grid':
+          'linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px)',
       },
     },
   },
-  plugins: [
-    ({ addVariant }) => addVariant('light', 'html[data-theme="light"] &'),
-  ],
+  plugins: [({ addVariant }) => addVariant('light', 'html[data-theme="light"] &')],
 }

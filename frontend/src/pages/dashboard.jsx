@@ -4,8 +4,116 @@ import { api, backendUrl } from '../lib/api'
 import { orders } from '../data/mockData'
 import { Card, SectionHeader, StatusBadge } from '../components/ui'
 import { rupiah } from '../lib/utils'
-function Metric({label,value,Icon}){return <Card><Icon className="text-gold"/><p className="mt-6 text-3xl font-semibold">{value}</p><p className="text-sm text-cream/45">{label}</p></Card>}
-export function AdminDashboard(){const [s,setS]=useState(null);useEffect(()=>{api.adminSummary().then(setS)},[]);return <><SectionHeader eyebrow="Admin" title="Command center untuk production workflow"/><div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Metric label="Total orders" value={s?.totalOrders??'-'} Icon={FileText}/><Metric label="Pending payments" value={s?.pendingPayments??'-'} Icon={CreditCard}/><Metric label="Active schedules" value={s?.activeSchedules??'-'} Icon={CalendarDays}/><Metric label="Completed projects" value={s?.completedProjects??'-'} Icon={CheckCircle2}/></div><Card className="mt-6"><h3 className="text-2xl font-semibold">Payment Verification</h3><p className="subtle mt-2">Tabel clean dengan badges, search/filter, dan action yang mengarah ke backend existing.</p><Table rows={orders} action="/admin/pembayaran"/></Card></>}
-export function EditorDashboard(){return <><SectionHeader eyebrow="Editor" title="Assigned jobs & progress update"/><div className="grid gap-4 md:grid-cols-3"><Metric label="Cut-to-cut" value="6" Icon={Clock}/><Metric label="Finishing" value="4" Icon={Upload}/><Metric label="Done" value="18" Icon={CheckCircle2}/></div><div className="mt-6 grid gap-4 lg:grid-cols-3">{['cut_to_cut','finishing','done'].map((st,i)=><Card key={st}><StatusBadge status={st}/><h3 className="mt-5 text-xl font-semibold">{orders[i]?.nama_paket}</h3><p className="subtle mt-2">Deadline dan catatan produksi tampil di sini saat API editor dashboard disambungkan.</p><a className="btn-secondary mt-5" href={backendUrl('/editor/tugas')}>Update Progress</a></Card>)}</div></>}
-export function CustomerDashboard(){return <><SectionHeader eyebrow="Pelanggan" title="My orders, payment proof, progress, invoice"/><Card><Table rows={orders} action="/pelanggan" customer/></Card></>}
-function Table({rows,action,customer=false}){return <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="text-cream/45"><tr><th className="py-3">Kode</th><th>Paket</th><th>Status</th><th>Total</th><th>Action</th></tr></thead><tbody className="divide-y divide-white/10">{rows.map(r=><tr key={r.kode_pemesanan}><td className="py-4 font-mono text-gold">{r.kode_pemesanan}</td><td>{r.nama_paket}</td><td><StatusBadge status={r.status_pemesanan}/></td><td>{rupiah(r.total_biaya)}</td><td><a className="btn-secondary py-2" href={backendUrl(customer?`/invoice/${r.kode_pemesanan}`:action)}>Open</a></td></tr>)}</tbody></table></div>}
+
+function Metric({ label, value, Icon }) {
+  return (
+    <Card>
+      <Icon className="text-gold" />
+      <p className="mt-6 text-3xl font-semibold text-cream light:text-charcoal">{value}</p>
+      <p className="text-sm text-cream/45 light:text-black/45">{label}</p>
+    </Card>
+  )
+}
+
+export function AdminDashboard() {
+  const [s, setS] = useState(null)
+  useEffect(() => {
+    api.adminSummary().then(setS)
+  }, [])
+  return (
+    <>
+      <SectionHeader eyebrow="Admin" title="Command center untuk production workflow" />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Metric label="Total orders" value={s?.totalOrders ?? '-'} Icon={FileText} />
+        <Metric label="Pending payments" value={s?.pendingPayments ?? '-'} Icon={CreditCard} />
+        <Metric label="Active schedules" value={s?.activeSchedules ?? '-'} Icon={CalendarDays} />
+        <Metric label="Completed projects" value={s?.completedProjects ?? '-'} Icon={CheckCircle2} />
+      </div>
+      <Card className="mt-6">
+        <h3 className="text-2xl font-semibold text-cream light:text-charcoal">Payment Verification</h3>
+        <p className="subtle mt-2">
+          Tabel clean dengan badges, search/filter, dan action yang mengarah ke backend existing.
+        </p>
+        <Table rows={orders} action="/admin/pembayaran" />
+      </Card>
+    </>
+  )
+}
+
+export function EditorDashboard() {
+  return (
+    <>
+      <SectionHeader eyebrow="Editor" title="Assigned jobs & progress update" />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Metric label="Cut-to-cut" value="6" Icon={Clock} />
+        <Metric label="Finishing" value="4" Icon={Upload} />
+        <Metric label="Done" value="18" Icon={CheckCircle2} />
+      </div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        {['cut_to_cut', 'finishing', 'done'].map((st, i) => (
+          <Card key={st}>
+            <StatusBadge status={st} />
+            <h3 className="mt-5 text-xl font-semibold text-cream light:text-charcoal">
+              {orders[i]?.nama_paket}
+            </h3>
+            <p className="subtle mt-2">
+              Deadline dan catatan produksi tampil di sini saat API editor dashboard disambungkan.
+            </p>
+            <a className="btn-secondary mt-5" href={backendUrl('/editor/tugas')}>
+              Update Progress
+            </a>
+          </Card>
+        ))}
+      </div>
+    </>
+  )
+}
+
+export function CustomerDashboard() {
+  return (
+    <>
+      <SectionHeader eyebrow="Pelanggan" title="My orders, payment proof, progress, invoice" />
+      <Card>
+        <Table rows={orders} action="/pelanggan" customer />
+      </Card>
+    </>
+  )
+}
+
+function Table({ rows, action, customer = false }) {
+  return (
+    <div className="mt-6 overflow-x-auto">
+      <table className="w-full min-w-[760px] text-left text-sm">
+        <thead className="text-cream/45 light:text-black/45">
+          <tr>
+            <th className="py-3">Kode</th>
+            <th>Paket</th>
+            <th>Status</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-white/10 light:divide-black/10">
+          {rows.map((r) => (
+            <tr key={r.kode_pemesanan}>
+              <td className="py-4 font-mono text-gold">{r.kode_pemesanan}</td>
+              <td className="text-cream light:text-charcoal">{r.nama_paket}</td>
+              <td>
+                <StatusBadge status={r.status_pemesanan} />
+              </td>
+              <td className="text-cream light:text-charcoal">{rupiah(r.total_biaya)}</td>
+              <td>
+                <a
+                  className="btn-secondary py-2"
+                  href={backendUrl(customer ? `/invoice/${r.kode_pemesanan}` : action)}
+                >
+                  Open
+                </a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
