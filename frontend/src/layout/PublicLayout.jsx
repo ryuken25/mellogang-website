@@ -86,7 +86,7 @@ export default function PublicLayout() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-ink/70 backdrop-blur-2xl light:border-black/10 light:bg-[#fff7ea]/80">
         <div className="container-premium flex h-20 items-center justify-between">
           <Link to="/" className="relative flex items-center pr-2" aria-label="Mellogang Visuals home">
-            <BrandLogo className="h-11 w-auto max-w-[220px] sm:h-12 sm:max-w-[260px]" />
+            <BrandLogo className="h-11 w-11 sm:h-12 sm:w-12" showWordmark />
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -173,7 +173,7 @@ export default function PublicLayout() {
         <div className="container-premium grid gap-8 md:grid-cols-[1.2fr_.8fr_.8fr]">
           <div>
             <div className="relative flex items-center gap-3">
-              <BrandLogo className="h-12 w-auto max-w-[240px]" />
+              <BrandLogo className="h-12 w-12" showWordmark />
             </div>
             <p className="subtle mt-5 max-w-md">{brand.description}</p>
             <p className="mt-6 text-sm text-cream/45 light:text-black/45">

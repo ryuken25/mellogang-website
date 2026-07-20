@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E8C98A"/>
+      <stop offset="45%" stop-color="#C9A35A"/>
+      <stop offset="100%" stop-color="#9C7A3A"/>
+    </linearGradient>
+  </defs>
+  <!-- Stylized M with integrated bottom chevron -->
+  <path d="M250 760V270L512 640L774 270V760" stroke="url(#g)" stroke-width="108" stroke-linejoin="miter" stroke-linecap="butt"/>
+  <path d="M320 690L512 870L704 690" stroke="url(#g)" stroke-width="96" stroke-linejoin="miter" stroke-linecap="butt"/>
+</svg>
