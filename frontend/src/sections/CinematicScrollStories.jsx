@@ -1,54 +1,49 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion'
+import { motion, useInView } from 'framer-motion'
 import { ArrowRight, Play } from 'lucide-react'
 import { landingStoryChapters } from '../data/portfolioData'
 import { brand } from '../data/brandData'
 import { cn } from '../lib/utils'
+import { useMotionProfile } from '../hooks/useMotionProfile'
 
-function Chapter({ chapter, index }) {
+function Chapter({ chapter, index, lite }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { amount: 0.45, margin: '-10% 0px -10% 0px' })
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start end', 'end start'],
-  })
-  const y = useTransform(scrollYProgress, [0, 1], [48, -48])
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [1.08, 1, 1.04])
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.25, 1, 1, 0.35])
-  const smoothY = useSpring(y, { stiffness: 70, damping: 22 })
+  const inView = useInView(ref, { amount: 0.4, margin: '-8% 0px -8% 0px' })
 
   return (
     <section
       ref={ref}
       className="relative min-h-[100svh] overflow-hidden border-b border-white/5"
+      style={{ contentVisibility: 'auto', containIntrinsicSize: '1px 100svh' }}
     >
-      <motion.div style={{ y: smoothY, scale, opacity }} className="absolute inset-0">
+      <div className="absolute inset-0 will-change-transform">
         <img
           src={chapter.image}
           alt={chapter.title}
-          className="h-full w-full object-cover"
+          loading={index === 0 ? 'eager' : 'lazy'}
+          decoding="async"
+          className={cn(
+            'h-full w-full object-cover transition-transform duration-700 ease-out',
+            inView && !lite ? 'scale-100' : 'scale-[1.03]'
+          )}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/55 to-black/25" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/25" />
-      </motion.div>
+      </div>
 
-      <div className="container-premium relative z-10 flex min-h-[100svh] items-end py-20 sm:items-center sm:py-24">
+      <div className="container-premium relative z-10 flex min-h-[100svh] items-end py-16 sm:items-center sm:py-24">
         <motion.div
           initial={false}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.35, y: 28 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0.5, y: lite ? 12 : 24 }}
+          transition={{ duration: lite ? 0.4 : 0.65, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-2xl"
         >
-          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold">
-            {chapter.eyebrow}
-          </p>
+          <p className="text-xs font-semibold uppercase tracking-[0.34em] text-gold">{chapter.eyebrow}</p>
           <h2 className="mt-4 font-display text-4xl font-semibold tracking-[-0.04em] text-cream sm:text-6xl">
             {chapter.title}
           </h2>
-          <p className="mt-5 max-w-xl text-base leading-7 text-cream/75 sm:text-lg">
-            {chapter.text}
-          </p>
+          <p className="mt-5 max-w-xl text-base leading-7 text-cream/75 sm:text-lg">{chapter.text}</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link className="btn-primary" to={chapter.cta.to}>
               {chapter.cta.label} <ArrowRight size={16} />
@@ -67,13 +62,14 @@ function Chapter({ chapter, index }) {
 }
 
 /**
- * Full-page cinematic scroll story (non-GSAP).
- * Elegant parallax + chapter fades inspired by premium film studio sites.
+ * Full-page cinematic scroll story optimized for Android/mobile.
+ * Uses IntersectionObserver + lightweight transforms (no continuous parallax springs).
  */
 export default function CinematicScrollStories() {
   const chapters = useMemo(() => landingStoryChapters, [])
   const [active, setActive] = useState(0)
   const rootRef = useRef(null)
+  const profile = useMotionProfile()
 
   useEffect(() => {
     const nodes = Array.from(rootRef.current?.querySelectorAll('[data-chapter]') || [])
@@ -84,18 +80,39 @@ export default function CinematicScrollStories() {
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
         if (!visible) return
-        const idx = Number(visible.target.getAttribute('data-chapter') || 0)
-        setActive(idx)
+        setActive(Number(visible.target.getAttribute('data-chapter') || 0))
       },
-      { threshold: [0.35, 0.55, 0.7] }
+      { threshold: profile.lite ? [0.4, 0.6] : [0.35, 0.55, 0.7] }
     )
     nodes.forEach((n) => io.observe(n))
     return () => io.disconnect()
-  }, [])
+  }, [profile.lite])
 
   return (
     <div ref={rootRef} className="relative bg-ink">
-      {/* sticky progress rail */}
+      {/* mobile progress chips */}
+      <div className="sticky top-[4.6rem] z-30 border-b border-white/5 bg-ink/70 px-4 py-2 backdrop-blur-md lg:hidden">
+        <div className="mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto no-scrollbar">
+          {chapters.map((c, i) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => {
+                const el = rootRef.current?.querySelector(`[data-chapter="${i}"]`)
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }}
+              className={cn(
+                'shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-wide transition',
+                i === active ? 'bg-gold text-ink' : 'bg-white/8 text-cream/60'
+              )}
+            >
+              {c.eyebrow.replace('Chapter ', 'Ch ')}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* desktop progress rail */}
       <div className="pointer-events-none fixed bottom-8 left-1/2 z-40 hidden -translate-x-1/2 lg:block">
         <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/45 px-3 py-2 backdrop-blur-xl">
           {chapters.map((c, i) => (
@@ -112,14 +129,19 @@ export default function CinematicScrollStories() {
 
       {chapters.map((chapter, index) => (
         <div key={chapter.id} data-chapter={index}>
-          <Chapter chapter={chapter} index={index} />
+          <Chapter chapter={chapter} index={index} lite={profile.lite} />
         </div>
       ))}
 
-      {/* closing strip */}
-      <section className="relative overflow-hidden py-20">
+      <section className="relative overflow-hidden py-16 sm:py-20">
         <div className="absolute inset-0">
-          <img src="/brand/portfolio/yt-8kSnL2fBCTU.jpg" alt="" className="h-full w-full object-cover opacity-35" />
+          <img
+            src="/brand/portfolio/yt-8kSnL2fBCTU.jpg"
+            alt=""
+            className="h-full w-full object-cover opacity-35"
+            loading="lazy"
+            decoding="async"
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/50" />
         </div>
         <div className="container-premium relative z-10 grid items-center gap-8 lg:grid-cols-[1.1fr_.9fr]">

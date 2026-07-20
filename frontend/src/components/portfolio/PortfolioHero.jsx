@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useMotionProfile } from '../../hooks/useMotionProfile'
 import { ArrowRight } from 'lucide-react'
 import { brand } from '../../data/brandData'
 import SmartImage from '../SmartImage'
@@ -14,6 +15,7 @@ function IconImg({ name }) {
 }
 
 export default function PortfolioHero({ onExplore }) {
+  const profile = useMotionProfile()
   return (
     <section className="relative overflow-hidden py-16 sm:py-24 lg:py-28">
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_25%_10%,rgba(244,200,117,.14),transparent_30%),radial-gradient(circle_at_78%_25%,rgba(184,243,230,.08),transparent_28%)]" />
@@ -59,7 +61,7 @@ export default function PortfolioHero({ onExplore }) {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.12, duration: 0.6 }}
-              whileHover={{ y: -6, transition: { duration: 0.35 } }}
+              whileHover={profile.lite ? undefined : { y: -6, transition: { duration: 0.35 } }}
             >
               <SmartImage src={img.src} alt={img.alt} objectPosition={img.pos} />
             </motion.div>

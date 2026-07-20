@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { useMotionProfile } from '../hooks/useMotionProfile'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
@@ -125,8 +126,8 @@ export function Hero() {
             <motion.div
               key={item.id}
               className={`absolute overflow-hidden rounded-[2rem] border border-white/15 shadow-glow ${['left-8 top-6 h-64 w-52', 'right-0 top-28 h-72 w-56', 'bottom-4 left-20 h-56 w-72'][i]}`}
-              animate={{ y: [0, i % 2 ? 14 : -12, 0] }}
-              transition={{ duration: 7 + i, repeat: Infinity }}
+              animate={{ y: [0, i % 2 ? 8 : -6, 0] }}
+              transition={{ duration: 8 + i, repeat: Infinity, ease: 'easeInOut' }}
             >
               <img className="h-full w-full object-cover" src={item.thumbnail} alt={item.title} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
@@ -302,14 +303,16 @@ export function StoriesAndPackages() {
   const progressRef = useRef(null)
   const triggerRef = useRef(null)
   const reduceMotion = useReducedMotion()
+  const motionProfile = useMotionProfile()
 
-  /* ---------- GSAP pinned story (desktop only) ---------- */
+  /* ---------- GSAP pinned story (desktop fine-pointer only) ---------- */
   useEffect(() => {
-    if (reduceMotion || !pinRef.current) return
+    if (reduceMotion || !motionProfile.enableGsapPin || !pinRef.current) return
     const cards = cardsRef.current.filter(Boolean)
     if (cards.length < 2) return
 
-    gsap.set(cards, { autoAlpha: 0, yPercent: 18, scale: 0.92 })
+    // Keep transforms cheap for GPU compositing (no blur filters).
+    gsap.set(cards, { autoAlpha: 0, yPercent: 14, scale: 0.96, force3D: true })
     gsap.set(cards[0], { autoAlpha: 1, yPercent: 0, scale: 1 })
     gsap.set(progressRef.current, { scaleX: 0, transformOrigin: '0% 50%' })
 
@@ -319,10 +322,13 @@ export function StoriesAndPackages() {
         trigger: pinRef.current,
         start: 'top top',
         end: () => `+=${window.innerHeight * Math.max(1, storySteps.length - 1)}`,
-        scrub: 0.8,
+        scrub: 0.55,
         pin: true,
+        pinSpacing: true,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        // avoid pin jank on some mobile browsers even if media query lies
+        preventOverlaps: true,
         onUpdate: (self) => {
           const next = Math.min(storySteps.length - 1, Math.max(0, Math.round(self.progress * (storySteps.length - 1))))
           setActiveStep(next)
@@ -336,25 +342,27 @@ export function StoriesAndPackages() {
       if (index === 0) return
       tl.to(cards[index - 1], {
         autoAlpha: 0,
-        yPercent: -14,
-        scale: 0.88,
-        filter: 'blur(6px)',
-        duration: 0.48,
+        yPercent: -10,
+        scale: 0.94,
+        duration: 0.42,
         ease: 'power2.out',
       })
       tl.to(card, {
         autoAlpha: 1,
         yPercent: 0,
         scale: 1,
-        filter: 'blur(0px)',
-        duration: 0.58,
+        duration: 0.5,
         ease: 'power2.out',
-      }, '<0.08')
+      }, '<0.06')
     })
 
-    const refresh = window.setTimeout(() => ScrollTrigger.refresh(), 350)
-    return () => window.clearTimeout(refresh)
-  }, [reduceMotion])
+    const refresh = window.setTimeout(() => ScrollTrigger.refresh(), 250)
+    return () => {
+      window.clearTimeout(refresh)
+      tl.scrollTrigger?.kill()
+      tl.kill()
+    }
+  }, [reduceMotion, motionProfile.enableGsapPin])
 
   /* ---------- jump to chapter ---------- */
   const jumpTo = useCallback((index) => {
@@ -441,10 +449,10 @@ export function StoriesAndPackages() {
             {storySteps.map((step, i) => (
               <motion.div key={step.id}
                 className={`rounded-[2rem] border p-5 transition-colors ${i === activeStep ? 'border-gold/30 bg-white/[.06]' : 'border-white/10 bg-white/[.03]'}`}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.5, delay: i * 0.06 }}>
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.42, delay: Math.min(i * 0.04, 0.16), ease: [0.22, 1, 0.36, 1] }}>
                 <div className="relative overflow-hidden rounded-2xl">
                   <img className="h-56 w-full object-cover" src={step.image} alt={step.title} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

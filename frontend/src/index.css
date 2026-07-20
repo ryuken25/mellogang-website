@@ -179,3 +179,38 @@ html[data-theme="light"] .btn-outline-mint {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Android / touch motion polish */
+html, body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.will-motion {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+@media (pointer: coarse) {
+  /* Prefer opacity/transform; avoid heavy hover-only polish */
+  .group:active {
+    transform: scale(0.99);
+  }
+  /* Better sticky header feel on Android Chrome */
+  header.sticky {
+    transform: translateZ(0);
+  }
+  /* Larger, smoother momentum for horizontal carousels */
+  .no-scrollbar {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+  }
+  /* Reduce layout thrash from large blurs on low-end GPUs */
+  .shadow-glow, .shadow-2xl {
+    box-shadow: 0 12px 40px rgba(0,0,0,0.28) !important;
+  }
+}
+@media (max-width: 1023px) {
+  .headline {
+    letter-spacing: -0.03em;
+  }
+}
