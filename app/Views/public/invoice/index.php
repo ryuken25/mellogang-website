@@ -12,7 +12,9 @@
 
       <div style="display:flex;gap:10px;align-items:flex-start;">
         <button class="btnGhost" type="button" onclick="window.print()">Print / Save PDF</button>
-        <a class="btnPrimary" href="<?= site_url('invoice/'.urlencode($order['kode_pemesanan']).'?download=1') ?>">Download</a>
+        <a class="btnPrimary" href="<?= site_url('invoice/'.urlencode($order['kode_pemesanan']).'?download=1') ?>" download>
+          Download PDF
+        </a>
       </div>
     </div>
 

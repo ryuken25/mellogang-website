@@ -75,6 +75,7 @@ class InvoiceController extends BaseController
         $sisaBayar = max(0, $totalTagihan - $totalValid);
 
         $download = (int) ($this->request->getGet('download') ?? 0) === 1;
+        $invoiceNo = 'INV-' . $kode;
 
         $data = [
             'title'        => 'Invoice ' . $kode,
@@ -83,21 +84,42 @@ class InvoiceController extends BaseController
             'totalValid'   => $totalValid,
             'totalTagihan' => $totalTagihan,
             'sisaBayar'    => $sisaBayar,
-            'invoiceNo'    => 'INV-' . $kode,
+            'invoiceNo'    => $invoiceNo,
             'issuedAt'     => date('Y-m-d H:i:s'),
         ];
 
-        $html = view('public/invoice/index', $data);
-
+        // ?download=1 must return a real PDF (Dompdf), not HTML attachment.
         if ($download) {
-            $filename = 'invoice-' . $kode . '.html';
+            try {
+                $pdf = (new \App\Libraries\InvoicePdf())->render(
+                    $order,
+                    $validPays,
+                    $totalTagihan,
+                    $totalValid,
+                    $sisaBayar,
+                    $invoiceNo
+                );
 
-            return $this->response
-                ->setHeader('Content-Type', 'text/html; charset=UTF-8')
-                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-                ->setBody($html);
+                $filename = 'invoice-' . preg_replace('/[^A-Za-z0-9._-]+/', '-', $kode) . '.pdf';
+
+                return $this->response
+                    ->setHeader('Content-Type', 'application/pdf')
+                    ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+                    ->setHeader('Cache-Control', 'private, max-age=0, must-revalidate')
+                    ->setHeader('Pragma', 'public')
+                    ->setBody($pdf);
+            } catch (\Throwable $e) {
+                log_message('error', 'Invoice PDF download failed for {kode}: {err}', [
+                    'kode' => $kode,
+                    'err'  => $e->getMessage(),
+                ]);
+
+                return redirect()
+                    ->to(site_url('invoice/' . urlencode($kode)))
+                    ->with('error', 'Gagal generate PDF invoice. Coba Print / Save PDF dulu.');
+            }
         }
 
-        return $html;
+        return view('public/invoice/index', $data);
     }
 }
