@@ -11,8 +11,20 @@ Premium cinematic React + Vite + Tailwind frontend for the existing CodeIgniter 
 ## Vercel settings
 
 - Root Directory: `frontend`
-- Build Command: `npm run build`
+- Build Command: `pnpm run build` (declared in `vercel.json`; lockfile = `pnpm-lock.yaml`)
 - Output Directory: `dist`
+- SPA fallback: `vercel.json` rewrites all paths to `/index.html` (filesystem
+  first), so deep links / refresh never 404.
+
+### Environment Variables (Vercel dashboard → Settings → Environment Variables)
+
+| Var | Wajib | Isi |
+|-----|-------|-----|
+| `VITE_API_BASE_URL` | ya | Base URL backend CI4, tanpa trailing slash, mis. `https://api.mellogangvisuals.com` |
+| `VITE_BACKEND_BASE_URL` | opsional | Override terpisah untuk form auth & link dashboard (default: pakai `VITE_API_BASE_URL`) |
+| `VITE_GOOGLE_AUTH_URL` | opsional | Default: `<base>/auth/google/redirect` |
+
+Tanpa env ini UI jatuh ke mock data (demo mode).
 
 ## Backend API
 
@@ -36,10 +48,14 @@ If the API is not configured, the UI falls back to mock data so the Vercel demo 
 ## Local commands
 
 ```bash
-npm install
-npm run build
-npm run dev
+pnpm install
+pnpm run build
+pnpm run dev
 ```
+
+Catatan: `package-lock.json` sudah dihapus — package manager proyek ini pnpm
+(lihat `packageManager` di package.json). Lockfile npm lama berisi URL mirror
+mati (mirrors.tencentyun.com) yang bikin `npm install` gagal.
 
 ## Backend limitation
 
