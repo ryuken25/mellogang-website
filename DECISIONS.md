@@ -198,3 +198,65 @@ ada lagi query `LOWER(col) = '...'`** — index kepakai.
 12. ./pages screenshot + README
 13. .env.example + .gitignore + README + push
 14. Final verify + cetak MANUAL STEPS
+
+## 16. Database produksi: Neon Postgres (2026-07-25)
+
+- DB produksi pindah ke **Neon** (Postgres serverless, project `mellogang`,
+  region ap-southeast-1). Alasan: gratis/murah, tanpa kelola server MySQL,
+  connection string tinggal ditaruh di `.env`.
+- CI4 driver: `Postgre`. Kunci `.env` baru: `database.default.sslmode` dan
+  `database.default.options` (endpoint ID untuk libpq lama tanpa SNI) —
+  keduanya ditambahkan ke `Config\Database::$default` karena .env hanya bisa
+  menimpa key yang sudah terdefinisi.
+- Semua migration + seeder dibuat driver-aware (lihat commit "Postgres (Neon)
+  support"). `user` adalah reserved word di PG — SQL mentah wajib lewat
+  `escapeIdentifiers()`. Query Builder aman (auto-quote).
+- MySQL/MariaDB tetap didukung untuk dev lokal (XAMPP).
+
+## 17. Deployment (routes-proof, 2026-07-25)
+
+Backend CI4 dan frontend React di-deploy TERPISAH:
+frontend = Vercel (https://mellogang.vercel.app), backend = host PHP sendiri.
+
+### (a) VPS / Apache
+- vhost `DocumentRoot` menunjuk ke `public/` (BUKAN root repo).
+- `AllowOverride All` supaya `public/.htaccess` (rewrite bawaan CI4) jalan.
+- `.env`: `app.baseURL = 'https://api.domain.com/'`, `app.indexPage` kosong.
+
+### (b) cPanel shared hosting
+- Taruh project DI LUAR `public_html` (mis. `~/mellogang/`).
+- Copy isi `public/*` ke `public_html/`.
+- Edit `public_html/index.php`: sesuaikan `require FCPATH . '../mellogang/app/Config/Paths.php'`
+  (path relatif ke lokasi project).
+- `.env` tetap di root project (`~/mellogang/.env`).
+
+### (c) Nginx
+```
+server {
+    root /var/www/mellogang/public;
+    index index.php;
+    location / {
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+    location ~ \.php$ {
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        include fastcgi.conf;
+    }
+}
+```
+
+### Smoke checklist routing
+1. `GET /index.php/admin` jalan tapi `GET /admin` 404 → masalah REWRITE
+   (mod_rewrite mati / AllowOverride None / try_files salah).
+2. Dua-duanya 404 → masalah DOCROOT atau `app.baseURL` salah.
+3. `GET /admin` tanpa login harus **302 ke /login** — kalau 404, route/filter
+   belum kepasang; kalau 500, cek koneksi DB (session pakai file, bukan DB).
+4. `GET /api/packages` dengan header `Origin: https://mellogang.vercel.app`
+   harus balas `Access-Control-Allow-Origin` origin itu (bukan `*`).
+5. Deep link Vercel (mis. `/status-pesanan`, refresh di halaman itu) harus
+   200 — rewrite SPA ada di `frontend/vercel.json`.
+
+### CSRF & login lintas origin
+- CSRF filter global ON untuk semua POST kecuali `login` & `register`
+  (React di Vercel form-POST langsung ke backend; token CI4 tidak tersedia
+  cross-origin). Mitigasi: throttler, lockout, session regenerate.

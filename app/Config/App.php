@@ -40,7 +40,9 @@ class App extends BaseConfig
      * something else. If you have configured your web server to remove this file
      * from your site URIs, set this variable to an empty string.
      */
-    public string $indexPage = 'index.php';
+    // Kosong: URL bersih tanpa index.php (rewrite via public/.htaccess /
+    // try_files nginx). Override per-environment lewat .env app.indexPage.
+    public string $indexPage = '';
 
     /**
      * --------------------------------------------------------------------------
