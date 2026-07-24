@@ -10,12 +10,9 @@ class DashboardApiController extends BaseController
 {
     private function json(array $payload, int $status = 200): ResponseInterface
     {
-        $origin = (string) $this->request->getHeaderLine('Origin');
+        // Header CORS diurus filter 'cors' (app/Config/Cors.php).
         return $this->response
             ->setStatusCode($status)
-            ->setHeader('Access-Control-Allow-Origin', $origin !== '' ? $origin : '*')
-            ->setHeader('Access-Control-Allow-Credentials', 'true')
-            ->setHeader('Vary', 'Origin')
             ->setJSON($payload);
     }
 

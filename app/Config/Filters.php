@@ -75,7 +75,11 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
+            // CSRF untuk semua POST. Pengecualian:
+            // - login/register: React frontend (Vercel) melakukan native form
+            //   POST cross-origin ke backend; token CSRF CI4 tidak tersedia di
+            //   origin itu. Mitigasi: throttler + lockout + session regenerate.
+            'csrf' => ['except' => ['login', 'register']],
             // 'invalidchars',
         ],
         'after' => [
@@ -107,7 +111,16 @@ class Filters extends BaseFilters
      * Example:
      * 'isLoggedIn' => ['before' => ['account/*', 'profiles/*']]
      *
+     * Role filters juga dipasang di route group (Routes.php); duplikasi di sini
+     * disengaja sebagai jaring pengaman terpusat — controller yang diproteksi
+     * tidak akan pernah bisa diakses tanpa filter, apapun definisi route-nya.
+     *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'role:admin'     => ['before' => ['admin', 'admin/*']],
+        'role:editor'    => ['before' => ['editor', 'editor/*']],
+        'role:pelanggan' => ['before' => ['pelanggan', 'pelanggan/*']],
+        'cors'           => ['before' => ['api', 'api/*'], 'after' => ['api', 'api/*']],
+    ];
 }

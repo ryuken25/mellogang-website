@@ -429,7 +429,8 @@ class AuthController extends BaseController
     {
         $token = $token !== '' ? $token : (string) $this->request->getGet('token');
         if ($token === '') {
-            return redirect()->to(site_url('login'))->with('error', 'Token unlock tidak valid.');
+            // Tanpa token: tampilkan halaman info unlock, bukan bounce ke login.
+            return $this->unlockForm();
         }
         $found = $this->tokens->findValid(AuthTokenModel::TYPE_UNLOCK, $token);
         if (! $found) {

@@ -99,7 +99,9 @@
 
     try {
       const form = new FormData();
-      form.append('<?= csrf_header() ?>', '<?= csrf_hash() ?>');
+      // Nama FIELD token = csrf_token() (csrf_header() itu nama header —
+      // salah dipakai di body POST, bikin 403 saat filter CSRF aktif).
+      form.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
       const r = await fetch('<?= site_url('admin/social/fetch') ?>', {
         method: 'POST',
         body: form,

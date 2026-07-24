@@ -11,10 +11,10 @@ if (file_exists(SYSTEMPATH . 'Config/Routes.php')) {
 }
 
 $routes->setDefaultNamespace('App\Controllers');
-$routes->setDefaultController('Home');
+$routes->setDefaultController('Public\HomeController');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
-$routes->set404Override();
+$routes->set404Override('App\Controllers\Public\ErrorController::show404');
 $routes->setAutoRoute(false);
 
 /*
@@ -66,7 +66,13 @@ $routes->get('kontak', 'Public\\KontakController::index');
 
 // JSON API for the React/Vercel frontend. These routes are additive and do not
 // replace the existing CodeIgniter views or role-protected business flows.
-$routes->group('api', static function ($routes) {
+// CORS: CI4 built-in Cors filter, origin dibatasi via app/Config/Cors.php
+// (https://mellogang.vercel.app + Vite dev). Filter juga terdaftar terpusat
+// di Filters::$filters untuk pattern api/*.
+$routes->group('api', ['filter' => 'cors'], static function ($routes) {
+    // Preflight: OPTIONS harus match sebuah route supaya filter cors jalan.
+    $routes->options('(:any)', static fn () => response()->setStatusCode(204));
+
     $routes->get('packages', 'Api\\PublicApiController::packages');
     $routes->get('portfolio', 'Api\\PublicApiController::portfolio');
     $routes->get('brand', 'Api\\PublicApiController::brand');
@@ -162,6 +168,14 @@ $routes->group('admin', ['filter' => 'role:admin'], static function ($routes) {
 
     // availability untuk admin form jadwal
     $routes->get('jadwal/availability', 'Admin\\JadwalProduksiController::availability');
+
+    // Pengeluaran operasional CRUD (halaman sendiri, terpisah dari laporan)
+    $routes->get('pengeluaran', 'Admin\\PengeluaranController::index');
+    $routes->get('pengeluaran/create', 'Admin\\PengeluaranController::create');
+    $routes->post('pengeluaran', 'Admin\\PengeluaranController::store');
+    $routes->get('pengeluaran/edit/(:num)', 'Admin\\PengeluaranController::edit/$1');
+    $routes->post('pengeluaran/update/(:num)', 'Admin\\PengeluaranController::update/$1');
+    $routes->post('pengeluaran/delete/(:num)', 'Admin\\PengeluaranController::delete/$1');
 
     // Laporan + Export CSV
     $routes->get('laporan', 'Admin\\LaporanController::index');
