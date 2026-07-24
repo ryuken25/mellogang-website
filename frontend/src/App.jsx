@@ -17,7 +17,16 @@ import Auth from './pages/Auth'
 import Profile from './pages/Profile'
 import EditProfile from './pages/EditProfile'
 import CreateBooking from './pages/customer/CreateBooking'
-import { AdminDashboard, CustomerDashboard, EditorDashboard } from './pages/dashboard'
+import { CustomerDashboard, EditorDashboard } from './pages/dashboard'
+import AdminLayout from './admin/AdminLayout'
+import AdminDashboardV2 from './admin/pages/Dashboard'
+import AdminPemesanan from './admin/pages/Pemesanan'
+import AdminPembayaran from './admin/pages/Pembayaran'
+import AdminJadwal from './admin/pages/Jadwal'
+import AdminKatalog from './admin/pages/Katalog'
+import AdminPortofolio from './admin/pages/Portofolio'
+import AdminSocial from './admin/pages/Social'
+import AdminPengguna from './admin/pages/Pengguna'
 
 const router = createBrowserRouter([
   {
@@ -40,9 +49,24 @@ const router = createBrowserRouter([
       { path: 'pelanggan/dashboard', element: <ProtectedRoute><CustomerDashboard /></ProtectedRoute> },
       { path: 'pelanggan/status', element: <Navigate to="/status" replace /> },
       { path: 'pelanggan/pemesanan/buat/:packageId', element: <ProtectedRoute><CreateBooking /></ProtectedRoute> },
-      { path: 'admin', element: <AdminDashboard /> },
       { path: 'editor', element: <EditorDashboard /> },
       { path: '*', element: <NotFound /> },
+    ],
+  },
+  {
+    path: '/admin',
+    element: <AdminLayout />,
+    errorElement: <AppErrorBoundary />,
+    children: [
+      { index: true, element: <AdminDashboardV2 /> },
+      { path: 'pemesanan', element: <AdminPemesanan /> },
+      { path: 'pembayaran', element: <AdminPembayaran /> },
+      { path: 'jadwal', element: <AdminJadwal /> },
+      { path: 'katalog', element: <AdminKatalog /> },
+      { path: 'portofolio', element: <AdminPortofolio /> },
+      { path: 'social', element: <AdminSocial /> },
+      { path: 'pengguna', element: <AdminPengguna /> },
+      { path: '*', element: <Navigate to="/admin" replace /> },
     ],
   },
   { path: '/auth', element: <Auth defaultMode="signin" />, errorElement: <AppErrorBoundary /> },
@@ -53,7 +77,7 @@ const router = createBrowserRouter([
     element: <DashboardLayout />,
     errorElement: <AppErrorBoundary />,
     children: [
-      { path: 'admin', element: <AdminDashboard /> },
+      { path: 'admin', element: <Navigate to="/admin" replace /> },
       { path: 'editor', element: <EditorDashboard /> },
       { path: 'pelanggan', element: <CustomerDashboard /> },
     ],
