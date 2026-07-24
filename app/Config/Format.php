@@ -61,4 +61,14 @@ class Format extends BaseConfig
         'application/xml'  => 0,
         'text/xml'         => 0,
     ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * JSON Encode Depth
+     * --------------------------------------------------------------------------
+     *
+     * The maximum encoding depth for json_encode(). Required by the
+     * framework's JSONFormatter as of CI 4.7.
+     */
+    public int $jsonEncodeDepth = 512;
 }
