@@ -3,6 +3,8 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Services\PembayaranService;
+use App\Support\Status;
 
 class PembayaranController extends BaseController
 {
@@ -18,6 +20,7 @@ class PembayaranController extends BaseController
 
         $q = $db->table('pembayaran p')
             ->select('p.id_pembayaran, p.id_pemesanan, p.jenis_pembayaran, p.tanggal_bayar, p.metode_pembayaran, p.jumlah_bayar, p.bukti_bayar, p.status_verifikasi,
+                      p.gateway, p.transaction_status, p.payment_type,
                       pm.kode_pemesanan, pm.total_biaya,
                       u.nama_lengkap')
             ->join('pemesanan pm', 'pm.id_pemesanan = p.id_pemesanan', 'left')
@@ -25,9 +28,9 @@ class PembayaranController extends BaseController
             ->orderBy('p.id_pembayaran', 'DESC');
 
         if ($status && strtolower($status) !== 'all') {
-            $st = strtolower($status);
-            // aman untuk case "Menunggu" / "menunggu"
-            $q->where("LOWER(p.status_verifikasi) = '{$st}'", null, false);
+            // Status sudah kanonik lowercase (migration NormalizeStatusValues)
+            // — filter langsung, tanpa LOWER() raw (lihat bugging.md).
+            $q->where('p.status_verifikasi', strtolower($status));
         }
 
         $rows = $q->get()->getResultArray();
@@ -76,55 +79,25 @@ class PembayaranController extends BaseController
             return redirect()->to(site_url('admin/pembayaran'))->with('error', 'Data pembayaran tidak ditemukan.');
         }
 
-        // Simpan "Menunggu" (kapital) biar konsisten sama data kamu
-        $storeStatus = ($status === 'menunggu') ? 'Menunggu' : $status;
+        // Pembayaran Midtrans yang sudah valid = read-only. Webhook adalah
+        // satu-satunya sumber kebenaran untuk gateway otomatis.
+        $isMidtrans = ($row['gateway'] ?? 'manual') === 'midtrans';
+        $curVerif   = $this->normStatus($row['status_verifikasi'] ?? '');
+        if ($isMidtrans && $curVerif === Status::VERIF_VALID) {
+            return redirect()->to(site_url('admin/pembayaran/verify/'.$idPembayaran))
+                ->with('error', 'Pembayaran Midtrans sudah settle — tidak bisa diubah manual.');
+        }
 
+        // Simpan kanonik lowercase (menunggu|valid|ditolak) — lihat App\Support\Status.
         $db->table('pembayaran')->where('id_pembayaran', (int)$idPembayaran)->update([
-            'status_verifikasi'  => $storeStatus,
+            'status_verifikasi'  => $status,
             'catatan_verifikasi' => $catatan,
         ]);
 
-        // ===== Update status pemesanan dengan aman (jangan ganggu status produksi/terjadwal/dll) =====
-        $idPemesanan = (int)($row['id_pemesanan'] ?? 0);
-        $order = $db->table('pemesanan')->where('id_pemesanan', $idPemesanan)->get()->getRowArray();
-
-        if ($order) {
-            $totalOrder = (int)($order['total_biaya'] ?? 0);
-            $currentStatus = $this->normStatus($order['status_pemesanan'] ?? '');
-
-            // status yang boleh di-override otomatis oleh pembayaran
-            $allowed = ['menunggu pembayaran', 'menunggu pelunasan', 'menunggu verifikasi', 'lunas'];
-
-            if (in_array($currentStatus, $allowed, true)) {
-                $payRows = $db->table('pembayaran')
-                    ->select('jenis_pembayaran, jumlah_bayar, status_verifikasi')
-                    ->where('id_pemesanan', $idPemesanan)
-                    ->get()->getResultArray();
-
-                $sumValid = 0;
-                $hasWaiting = false;
-
-                foreach ($payRows as $r) {
-                    $st = $this->normStatus($r['status_verifikasi'] ?? '');
-                    if ($st === 'menunggu') $hasWaiting = true;
-                    if ($st !== 'valid') continue;
-                    $sumValid += (int)($r['jumlah_bayar'] ?? 0);
-                }
-
-                $newStatus = 'menunggu pembayaran';
-                if ($totalOrder > 0 && $sumValid >= $totalOrder) {
-                    $newStatus = 'lunas';
-                } elseif ($hasWaiting) {
-                    $newStatus = 'menunggu verifikasi';
-                } elseif ($sumValid > 0) {
-                    $newStatus = 'menunggu pelunasan';
-                }
-
-                $db->table('pemesanan')->where('id_pemesanan', $idPemesanan)->update([
-                    'status_pemesanan' => $newStatus,
-                ]);
-            }
-        }
+        // Update status pemesanan lewat domain logic bersama (dipakai juga
+        // webhook Midtrans). Logika lama inline di sini memakai status
+        // ber-spasi — dead code sejak normalisasi snake_case.
+        (new PembayaranService())->recalcOrderStatus((int)($row['id_pemesanan'] ?? 0));
 
         return redirect()->to(site_url('admin/pembayaran/verify/'.$idPembayaran))
             ->with('success', 'Verifikasi tersimpan.');

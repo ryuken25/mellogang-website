@@ -79,7 +79,9 @@ class Filters extends BaseFilters
             // - login/register: React frontend (Vercel) melakukan native form
             //   POST cross-origin ke backend; token CSRF CI4 tidak tersedia di
             //   origin itu. Mitigasi: throttler + lockout + session regenerate.
-            'csrf' => ['except' => ['login', 'register']],
+            // - payment/midtrans/notify: webhook server-to-server Midtrans,
+            //   diverifikasi via signature_key sha512 (bukan session/CSRF).
+            'csrf' => ['except' => ['login', 'register', 'payment/midtrans/notify']],
             // 'invalidchars',
         ],
         'after' => [

@@ -134,6 +134,42 @@ npx playwright install --with-deps chromium
 npm test
 ```
 
+## Pembayaran Otomatis (Midtrans)
+
+Snap (sandbox-first) berjalan berdampingan dengan transfer manual + upload bukti.
+
+- **Config**: `.env` → `midtrans.serverKey`, `midtrans.clientKey`,
+  `midtrans.isProduction=false`, `midtrans.merchantId` (lihat `.env.example`).
+  Dibaca `app/Config/Midtrans.php`.
+- **Flow**: halaman upload pembayaran punya blok "Bayar Otomatis (QRIS /
+  e-Wallet / VA)". Klik → `POST /pelanggan/pembayaran/{id}/snap-token`
+  (ownership + CSRF) → popup Snap. **Callback browser tidak pernah menandai
+  lunas** — status final selalu dari webhook `POST /payment/midtrans/notify`
+  (signature sha512, CSRF-exempt, idempotent: hanya upgrade
+  menunggu→ditolak→valid). UI mem-polling `GET /pelanggan/pembayaran/{id}/status`.
+- **Data**: `pembayaran.gateway` = `manual|midtrans` + kolom
+  `midtrans_order_id` (UNIQUE), `snap_token`, `payment_type`,
+  `transaction_status`, `gross_amount`, `paid_at`. Semua payload webhook
+  di-log ke `payment_notification` (termasuk yang signature-nya invalid).
+- **Admin**: baris Midtrans dapat badge; yang sudah settle read-only —
+  webhook satu-satunya sumber kebenaran.
+
+### Manual test plan (sandbox)
+
+1. Set Notification URL sandbox (butuh tunnel utk lokal):
+   `cloudflared tunnel --url http://localhost:8080` lalu di
+   https://dashboard.sandbox.midtrans.com → Settings → Configuration →
+   Payment Notification URL = `https://<tunnel>/payment/midtrans/notify`.
+2. Login pelanggan → halaman pembayaran → "Bayar Sekarang" (pilih DP/Pelunasan).
+3. Di popup Snap pilih QRIS → scan pakai https://simulator.sandbox.midtrans.com
+   (QRIS) → riwayat auto-refresh jadi `valid` setelah webhook masuk.
+4. VA: pilih bank transfer → bayar VA di simulator (BCA/BNI/dll).
+5. Kartu: `4811 1111 1111 1114`, exp bebas ke depan, CVV `123`, OTP `112233`.
+6. Skenario expire: buat transaksi, biarkan / set expire dari dashboard
+   sandbox → status jadi `ditolak` via webhook, pelanggan bisa bayar ulang.
+7. Idempotency: kirim ulang notifikasi dari dashboard (Resend) → respons
+   `no_state_change`, tidak ada perubahan kedua.
+
 ## File Upload Paths
 
 - Bukti bayar: `writable/uploads/pembayaran/`

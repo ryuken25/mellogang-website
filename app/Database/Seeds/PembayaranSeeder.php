@@ -44,7 +44,8 @@ class PembayaranSeeder extends Seeder
             // pastikan tidak null
             if ($jumlah <= 0) $jumlah = 250000;
 
-            $statusVerif = ['Menunggu', 'valid', 'valid', 'ditolak', 'valid', 'Menunggu'][$idx] ?? 'Menunggu';
+            // Kanonik lowercase (App\Support\Status) — dulu 'Menunggu' kapital.
+            $statusVerif = ['menunggu', 'valid', 'valid', 'ditolak', 'valid', 'menunggu'][$idx] ?? 'menunggu';
 
             $rows[] = [
                 'id_pemesanan'      => (int) $o['id_pemesanan'],

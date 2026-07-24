@@ -77,7 +77,12 @@
                   echo $tgl ? esc(date('d/m/Y H:i', strtotime($tgl))) : '-';
                 ?>
               </td>
-              <td><?= esc($r['metode_pembayaran'] ?? '-') ?></td>
+              <td>
+                <?= esc($r['metode_pembayaran'] ?? '-') ?>
+                <?php if (($r['gateway'] ?? 'manual') === 'midtrans'): ?>
+                  <span class="pill" style="background:rgba(0,245,184,.15);" title="<?= esc($r['transaction_status'] ?? '') ?>">Midtrans<?= !empty($r['payment_type']) ? ' · '.esc($r['payment_type']) : '' ?></span>
+                <?php endif; ?>
+              </td>
               <td style="text-align:right;font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--brand);">Rp <?= number_format((int)($r['jumlah_bayar'] ?? 0), 0, ',', '.') ?></td>
               <td><span class="pill status-<?= $stColor ?>"><?= $stLabel ?></span></td>
               <td>

@@ -32,12 +32,21 @@
     <?php foreach ($rows as $r): ?>
       <?php $st = strtolower(trim((string)($r['status_verifikasi'] ?? ''))); ?>
 
+      <?php $isMidtrans = ($r['gateway'] ?? 'manual') === 'midtrans'; ?>
       <div class="panel" style="margin-bottom:12px;">
         <div><b>Tanggal:</b> <?= esc($r['tanggal_bayar'] ?? '-') ?></div>
         <div><b>Jenis:</b> <?= esc($r['jenis_pembayaran']) ?></div>
-        <div><b>Metode:</b> <?= esc($r['metode_pembayaran']) ?></div>
+        <div><b>Metode:</b> <?= esc($r['metode_pembayaran']) ?>
+          <?php if ($isMidtrans): ?>
+            <span class="pill" style="background:rgba(0,245,184,.15);">Midtrans<?= !empty($r['payment_type']) ? ' · '.esc($r['payment_type']) : '' ?></span>
+          <?php endif; ?>
+        </div>
         <div><b>Jumlah:</b> Rp <?= number_format((int)$r['jumlah_bayar'],0,',','.') ?></div>
-        <div><b>Status:</b> <span class="pill"><?= esc($r['status_verifikasi']) ?></span></div>
+        <div><b>Status:</b> <span class="pill"><?= esc($r['status_verifikasi']) ?></span>
+          <?php if ($isMidtrans && !empty($r['transaction_status'])): ?>
+            <small class="muted">(<?= esc($r['transaction_status']) ?>)</small>
+          <?php endif; ?>
+        </div>
 
         <?php if (!empty($r['catatan_verifikasi'])): ?>
           <div><b>Catatan:</b> <?= esc($r['catatan_verifikasi']) ?></div>
@@ -51,11 +60,17 @@
           </div>
         <?php endif; ?>
 
-        <?php if (in_array($st, ['menunggu','ditolak'], true)): ?>
+        <?php if (!$isMidtrans && in_array($st, ['menunggu','ditolak'], true)): ?>
           <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
             <a class="btnPrimary" href="<?= site_url('pelanggan/pembayaran/ganti/'.$r['id_pembayaran']) ?>">
               Ganti Bukti
             </a>
+          </div>
+        <?php endif; ?>
+
+        <?php if ($isMidtrans && $st === 'menunggu'): ?>
+          <div class="muted" style="margin-top:8px;">
+            Menunggu konfirmasi Midtrans — status akan diperbarui otomatis.
           </div>
         <?php endif; ?>
       </div>
@@ -74,5 +89,43 @@
     <?php endif; ?>
   </div>
 </div>
+
+<?php
+// Polling status: aktif kalau baru balik dari Snap (?pay=midtrans) atau masih
+// ada transaksi midtrans yang menunggu. Sumber kebenaran = webhook; halaman
+// ini hanya menunggu perubahan lalu reload.
+$hasMidtransPending = false;
+foreach ($rows as $r) {
+    if (($r['gateway'] ?? 'manual') === 'midtrans'
+        && strtolower(trim((string)($r['status_verifikasi'] ?? ''))) === 'menunggu') {
+        $hasMidtransPending = true;
+        break;
+    }
+}
+?>
+<?php if ($hasMidtransPending): ?>
+<script>
+(function(){
+  const statusUrl = '<?= site_url('pelanggan/pembayaran/'.$order['id_pemesanan'].'/status') ?>';
+  let baseline = null;
+  let ticks = 0;
+
+  async function poll(){
+    ticks++;
+    if (ticks > 60) return; // stop setelah ~3 menit
+    try {
+      const r = await fetch(statusUrl, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+      const j = await r.json();
+      if (!j.ok) return;
+      const snapshot = JSON.stringify(j.payments.map(p => p.id_pembayaran + ':' + p.status_verifikasi));
+      if (baseline === null) { baseline = snapshot; }
+      else if (snapshot !== baseline) { window.location.reload(); return; }
+    } catch (e) { /* abaikan, coba lagi */ }
+    setTimeout(poll, 3000);
+  }
+  poll();
+})();
+</script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

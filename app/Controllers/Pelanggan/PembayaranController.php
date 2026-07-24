@@ -3,6 +3,8 @@
 namespace App\Controllers\Pelanggan;
 
 use App\Controllers\BaseController;
+use App\Services\MidtransService;
+use App\Support\Status;
 
 class PembayaranController extends BaseController
 {
@@ -90,6 +92,8 @@ class PembayaranController extends BaseController
                 ->with('success', 'Pesanan sudah lunas.');
         }
 
+        $midtransConfig = config('Midtrans');
+
         return view('pelanggan/pembayaran/upload', [
             'order'        => $order,
             'total'        => $total,
@@ -99,6 +103,10 @@ class PembayaranController extends BaseController
             'totalValid'   => $totalValid,
             'sisa'         => $sisa,
             'allowDP'      => $allowDP,
+            // Midtrans Snap (kosong = fitur otomatis disembunyikan)
+            'snapEnabled'   => $midtransConfig->serverKey !== '' && $midtransConfig->clientKey !== '',
+            'snapClientKey' => $midtransConfig->clientKey,
+            'snapJsUrl'     => $midtransConfig->snapJsUrl(),
         ]);
     }
 
@@ -186,8 +194,9 @@ class PembayaranController extends BaseController
             'metode_pembayaran'  => $metode,
             'jumlah_bayar'       => $jumlah,
             'bukti_bayar'        => $newName,
-            'status_verifikasi'  => 'Menunggu',
+            'status_verifikasi'  => Status::VERIF_MENUNGGU,
             'catatan_verifikasi' => null,
+            'gateway'            => 'manual',
         ]);
 
         return redirect()->to(site_url('pelanggan/pembayaran/riwayat/'.$order['id_pemesanan']))
@@ -274,6 +283,174 @@ class PembayaranController extends BaseController
         return $this->response->setContentType($mime)->setBody(file_get_contents($path));
     }
 
+    // ====== MIDTRANS SNAP (pembayaran otomatis) ======
+
+    /**
+     * POST /pelanggan/pembayaran/{idPemesanan}/snap-token
+     * Body: jenis_pembayaran=DP|Pelunasan. CSRF ON (dipanggil dari halaman CI4).
+     * Return: {ok, token, order_id}. Webhook yang menentukan status — bukan
+     * callback browser.
+     */
+    public function snapToken($idPemesanan)
+    {
+        if ($resp = $this->guard()) return $resp;
+
+        $db = db_connect();
+        $idUser = (int) session()->get('id_user');
+
+        $order = $db->table('pemesanan')
+            ->select('id_pemesanan,kode_pemesanan,id_user,total_biaya,status_pemesanan')
+            ->where('id_pemesanan', (int)$idPemesanan)
+            ->get()->getRowArray();
+
+        // Ownership check: hanya pemesanan milik sendiri.
+        if (!$order || (int)$order['id_user'] !== $idUser) {
+            return $this->response->setStatusCode(404)->setJSON(['ok' => false, 'error' => 'Pesanan tidak ditemukan / bukan milik kamu.']);
+        }
+
+        $statusLower = strtolower(trim((string)($order['status_pemesanan'] ?? '')));
+        if (in_array($statusLower, [Status::ORDER_BATAL, Status::ORDER_DITOLAK], true)) {
+            return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'error' => 'Pesanan sudah dibatalkan.']);
+        }
+
+        $jenis = (string) $this->request->getPost('jenis_pembayaran');
+        if (!in_array($jenis, ['DP', 'Pelunasan'], true)) {
+            return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'error' => 'jenis_pembayaran harus DP atau Pelunasan.']);
+        }
+
+        $total = (int)($order['total_biaya'] ?? 0);
+        $dpDue = (int) ceil($total * 0.5);
+        [$dpValid, $totalValid, $pendingCount] = $this->hitungRekap($db, (int)$idPemesanan);
+        $sisa = max(0, $total - $totalValid);
+
+        if ($sisa <= 0) {
+            return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'error' => 'Pesanan sudah lunas.']);
+        }
+
+        // Nominal mengikuti aturan flow manual: DP = 50%, Pelunasan = sisa/full.
+        if ($jenis === 'DP') {
+            if ($dpValid > 0) {
+                return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'error' => 'DP sudah valid. Pilih Pelunasan.']);
+            }
+            $amount = $dpDue;
+        } else {
+            $amount = ($dpValid > 0) ? $sisa : $total;
+        }
+
+        $midtrans = new MidtransService();
+
+        // Reuse token: masih ada transaksi midtrans menunggu dengan nominal sama.
+        $existing = $db->table('pembayaran')
+            ->where('id_pemesanan', (int)$idPemesanan)
+            ->where('gateway', 'midtrans')
+            ->where('status_verifikasi', Status::VERIF_MENUNGGU)
+            ->where('jumlah_bayar', $amount)
+            ->orderBy('id_pembayaran', 'DESC')
+            ->get()->getRowArray();
+
+        if ($existing && !empty($existing['snap_token'])) {
+            return $this->response->setJSON([
+                'ok'       => true,
+                'token'    => $existing['snap_token'],
+                'order_id' => $existing['midtrans_order_id'],
+                'reused'   => true,
+            ]);
+        }
+
+        // Kalau masih ada upload manual yang menunggu, jangan dobel jalur.
+        if ($pendingCount > 0) {
+            return $this->response->setStatusCode(422)->setJSON(['ok' => false, 'error' => 'Masih ada pembayaran manual menunggu verifikasi.']);
+        }
+
+        $orderId = $midtrans->buildOrderId((int)$idPemesanan);
+
+        $user = $db->table('user')
+            ->select('nama_lengkap, email, no_telepon')
+            ->where('id_user', $idUser)
+            ->get()->getRowArray() ?? [];
+
+        $detail = $db->table('detail_pemesanan')
+            ->select('nama_item')
+            ->where('id_pemesanan', (int)$idPemesanan)
+            ->get()->getRowArray();
+
+        // item_details HARUS berjumlah = gross_amount; representasikan sebagai
+        // satu line item DP/Pelunasan supaya selalu konsisten.
+        $label = $jenis === 'DP' ? 'DP 50% ' : 'Pelunasan ';
+        $itemDetails = [[
+            'id'       => 'PAY-' . $order['kode_pemesanan'],
+            'price'    => $amount,
+            'quantity' => 1,
+            'name'     => substr($label . ($detail['nama_item'] ?? 'Paket') . ' (' . $order['kode_pemesanan'] . ')', 0, 50),
+        ]];
+
+        try {
+            $token = $midtrans->createSnapTransaction($orderId, $amount, [
+                'first_name' => (string)($user['nama_lengkap'] ?? 'Pelanggan'),
+                'email'      => (string)($user['email'] ?? ''),
+                'phone'      => (string)($user['no_telepon'] ?? ''),
+            ], $itemDetails);
+        } catch (\Throwable $e) {
+            log_message('error', 'Snap token gagal: {msg}', ['msg' => $e->getMessage()]);
+            return $this->response->setStatusCode(502)->setJSON(['ok' => false, 'error' => 'Gagal membuat transaksi Midtrans. Coba lagi.']);
+        }
+
+        $db->table('pembayaran')->insert([
+            'id_pemesanan'       => (int)$idPemesanan,
+            'jenis_pembayaran'   => $jenis,
+            'tanggal_bayar'      => null,
+            'metode_pembayaran'  => 'Midtrans',
+            'jumlah_bayar'       => $amount,
+            'bukti_bayar'        => null,
+            'status_verifikasi'  => Status::VERIF_MENUNGGU,
+            'catatan_verifikasi' => null,
+            'gateway'            => 'midtrans',
+            'midtrans_order_id'  => $orderId,
+            'snap_token'         => $token,
+            'gross_amount'       => $amount,
+        ]);
+
+        return $this->response->setJSON(['ok' => true, 'token' => $token, 'order_id' => $orderId]);
+    }
+
+    /**
+     * GET /pelanggan/pembayaran/{idPemesanan}/status — polling setelah Snap
+     * popup ditutup. State hanya berubah lewat webhook.
+     */
+    public function status($idPemesanan)
+    {
+        if ($resp = $this->guard()) return $resp;
+
+        $db = db_connect();
+        $idUser = (int) session()->get('id_user');
+
+        $order = $db->table('pemesanan')
+            ->select('id_pemesanan,id_user,status_pemesanan,total_biaya')
+            ->where('id_pemesanan', (int)$idPemesanan)
+            ->get()->getRowArray();
+
+        if (!$order || (int)$order['id_user'] !== $idUser) {
+            return $this->response->setStatusCode(404)->setJSON(['ok' => false, 'error' => 'not_found']);
+        }
+
+        [$dpValid, $totalValid] = $this->hitungRekap($db, (int)$idPemesanan);
+
+        $payments = $db->table('pembayaran')
+            ->select('id_pembayaran, jenis_pembayaran, jumlah_bayar, status_verifikasi, gateway, transaction_status, payment_type, paid_at')
+            ->where('id_pemesanan', (int)$idPemesanan)
+            ->orderBy('id_pembayaran', 'DESC')
+            ->get()->getResultArray();
+
+        return $this->response->setJSON([
+            'ok'               => true,
+            'status_pemesanan' => $order['status_pemesanan'],
+            'total_biaya'      => (int)$order['total_biaya'],
+            'total_valid'      => $totalValid,
+            'sisa'             => max(0, (int)$order['total_biaya'] - $totalValid),
+            'payments'         => $payments,
+        ]);
+    }
+
     // ====== GANTI / REPLACE BUKTI ======
 
     public function edit($idPembayaran)
@@ -356,7 +533,7 @@ class PembayaranController extends BaseController
         $db->table('pembayaran')->where('id_pembayaran', (int)$idPembayaran)->update([
             'bukti_bayar'        => $newName,
             'tanggal_bayar'      => date('Y-m-d H:i:s'),
-            'status_verifikasi'  => 'Menunggu',
+            'status_verifikasi'  => Status::VERIF_MENUNGGU,
             'catatan_verifikasi' => null,
         ]);
 

@@ -13,11 +13,23 @@
   <?php endif; ?>
 
   <div class="panel">
+    <?php
+      $isMidtrans   = ($row['gateway'] ?? 'manual') === 'midtrans';
+      $stLower      = strtolower(trim((string)($row['status_verifikasi'] ?? '')));
+      $lockMidtrans = $isMidtrans && $stLower === 'valid';
+    ?>
     <div><b>Kode:</b> <?= esc($row['kode_pemesanan'] ?? '-') ?></div>
     <div><b>Pelanggan:</b> <?= esc($row['nama_lengkap'] ?? '-') ?></div>
     <div><b>Jenis:</b> <?= esc($row['jenis_pembayaran'] ?? '-') ?></div>
     <div><b>Jumlah:</b> Rp <?= number_format((int)($row['jumlah_bayar'] ?? 0), 0, ',', '.') ?></div>
     <div><b>Status:</b> <?= esc($row['status_verifikasi'] ?? '-') ?></div>
+    <?php if ($isMidtrans): ?>
+      <div><b>Gateway:</b> <span class="pill" style="background:rgba(0,245,184,.15);">Midtrans</span>
+        <?= !empty($row['payment_type']) ? esc($row['payment_type']) : '' ?>
+        <?= !empty($row['transaction_status']) ? '· '.esc($row['transaction_status']) : '' ?>
+        <?= !empty($row['midtrans_order_id']) ? '· '.esc($row['midtrans_order_id']) : '' ?>
+      </div>
+    <?php endif; ?>
 
     <?php if (!empty($row['bukti_bayar'])): ?>
       <hr style="border:0;border-top:1px solid #e5e7eb;margin:14px 0;">
@@ -45,6 +57,13 @@
 
     <hr style="border:0;border-top:1px solid #e5e7eb;margin:14px 0;">
 
+    <?php if ($lockMidtrans): ?>
+      <div class="alert ok">
+        Pembayaran ini settle otomatis via Midtrans — <b>read-only</b>.
+        Status final ditentukan webhook, tidak bisa diubah manual.
+      </div>
+      <a class="btnGhost" href="<?= site_url('admin/pembayaran') ?>" style="margin-top:10px;">Kembali</a>
+    <?php else: ?>
     <form method="post" action="<?= site_url('admin/pembayaran/verify/'.$row['id_pembayaran']) ?>">
       <?= csrf_field() ?>
 
@@ -68,6 +87,7 @@
       <button class="btnPrimary" type="submit" style="margin-top:10px;">Simpan</button>
       <a class="btnGhost" href="<?= site_url('admin/pembayaran') ?>" style="margin-top:10px;">Kembali</a>
     </form>
+    <?php endif; ?>
   </div>
 </div>
 

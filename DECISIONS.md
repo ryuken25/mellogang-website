@@ -260,3 +260,35 @@ server {
 - CSRF filter global ON untuk semua POST kecuali `login` & `register`
   (React di Vercel form-POST langsung ke backend; token CI4 tidak tersedia
   cross-origin). Mitigasi: throttler, lockout, session regenerate.
+
+## 18. Midtrans Snap (2026-07-25)
+
+- **Kenapa Snap** (bukan Core API): UI pembayaran (QRIS, e-wallet, VA, kartu)
+  di-host Midtrans — PCI scope minimal, satu popup untuk semua metode,
+  sandbox-first tanpa perubahan flow.
+- **Webhook = source of truth.** Callback JS (onSuccess/onPending) hanya
+  redirect ke halaman riwayat yang mem-polling server. Status pembayaran
+  hanya berubah lewat POST /payment/midtrans/notify setelah signature
+  sha512(order_id+status_code+gross_amount+serverKey) terverifikasi.
+- **Idempotency design**: (a) semua payload di-log ke payment_notification
+  (audit, termasuk signature invalid); (b) precedence guard — status hanya
+  boleh naik (menunggu -> ditolak -> valid), payload duplikat/lebih rendah
+  dibalas 200 no_state_change supaya Midtrans berhenti retry; (c)
+  midtrans_order_id UNIQUE di pembayaran.
+- **Reuse domain logic**: recalc status pemesanan diekstrak ke
+  App\Services\PembayaranService (dipakai admin verify + webhook). Logika
+  lama inline di admin masih pakai status ber-spasi — dead code sejak
+  normalisasi; sekaligus diperbaiki.
+- **gateway VARCHAR bukan ENUM**: portable Postgres (Neon) / MySQL.
+- **Uang tetap integer rupiah** (BIGINT) — cocok 1:1 dengan gross_amount
+  Midtrans; verifikasi webhook menolak mismatch nominal.
+
+### Production cutover checklist
+1. Ganti `.env`: serverKey/clientKey production, `midtrans.isProduction=true`.
+2. Dashboard production: set Payment Notification URL =
+   `https://<backend>/payment/midtrans/notify` (wajib HTTPS).
+3. Aktifkan metode pembayaran yang dipakai di dashboard (QRIS, GoPay,
+   ShopeePay, bank transfer).
+4. Smoke: transaksi kecil nyata + cek payment_notification kebaca,
+   status valid, invoice muncul di riwayat.
+5. Monitoring: log warning "signature INVALID" = ada yang iseng / salah key.

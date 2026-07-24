@@ -20,6 +20,33 @@
       <div>DP (50%): <b>Rp <?= number_format((int)$dpDue,0,',','.') ?></b></div>
     </div>
 
+    <?php if (!empty($snapEnabled)): ?>
+    <!-- ===== Bayar Otomatis (Midtrans Snap) ===== -->
+    <div class="panel" style="margin-bottom:12px;border:1px solid rgba(0,245,184,.35);">
+      <div style="font-weight:700;margin-bottom:6px;">Bayar Otomatis (QRIS / e-Wallet / Virtual Account)</div>
+      <div class="muted" style="margin-bottom:10px;">
+        Bayar instan via Midtrans — status terverifikasi otomatis, tanpa upload bukti.
+      </div>
+      <div class="row" style="align-items:flex-end;">
+        <div>
+          <div class="label">Jenis Pembayaran</div>
+          <select class="input" id="snap_jenis">
+            <?php if ($allowDP): ?>
+              <option value="DP">DP (50%) — Rp <?= number_format((int)$dpDue,0,',','.') ?></option>
+            <?php endif; ?>
+            <option value="Pelunasan"><?= $allowDP ? 'Pelunasan (Full)' : 'Pelunasan (Sisa)' ?> — Rp <?= number_format((int)$pelunasanDue,0,',','.') ?></option>
+          </select>
+        </div>
+        <div>
+          <button class="btnPrimary" type="button" id="btnSnapPay">Bayar Sekarang</button>
+        </div>
+      </div>
+      <div id="snapStatus" class="muted" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="muted" style="text-align:center;margin:8px 0;">— atau transfer manual + upload bukti —</div>
+    <?php endif; ?>
+
     <div class="panel" style="background:#fafafa;margin-bottom:12px;">
       <div style="font-weight:700;margin-bottom:6px;">Instruksi Pembayaran</div>
       <div class="muted" style="margin-bottom:8px;">
@@ -121,5 +148,63 @@
   syncJumlah();
 })();
 </script>
+
+<?php if (!empty($snapEnabled)): ?>
+<script src="<?= esc($snapJsUrl, 'attr') ?>" data-client-key="<?= esc($snapClientKey, 'attr') ?>"></script>
+<script>
+(function(){
+  const btn = document.getElementById('btnSnapPay');
+  const out = document.getElementById('snapStatus');
+  if (!btn) return;
+
+  const riwayatUrl = '<?= site_url('pelanggan/pembayaran/riwayat/'.$order['id_pemesanan']) ?>?pay=midtrans';
+
+  btn.addEventListener('click', async function(){
+    btn.disabled = true; btn.textContent = 'Memproses...';
+    out.textContent = '';
+
+    try {
+      // Token dibaca live dari cookie CSRF — token embed jadi basi setelah
+      // POST pertama (Security::$regenerate = true).
+      const cookieTok = (document.cookie.match(/(?:^|;\s*)<?= config('Security')->cookieName ?>=([^;]+)/) || [])[1];
+      const form = new FormData();
+      form.append('<?= csrf_token() ?>', cookieTok || '<?= csrf_hash() ?>');
+      form.append('jenis_pembayaran', document.getElementById('snap_jenis').value);
+
+      const r = await fetch('<?= site_url('pelanggan/pembayaran/'.$order['id_pemesanan'].'/snap-token') ?>', {
+        method: 'POST',
+        body: form,
+        credentials: 'same-origin',
+      });
+      const j = await r.json();
+
+      if (!j.ok || !j.token) {
+        out.textContent = j.error || 'Gagal membuat transaksi. Coba lagi.';
+        btn.disabled = false; btn.textContent = 'Bayar Sekarang';
+        return;
+      }
+
+      // PENTING: callback browser TIDAK menandai lunas — status final selalu
+      // dari webhook. Redirect ke riwayat yang mem-polling status server.
+      window.snap.pay(j.token, {
+        onSuccess: function(){ window.location = riwayatUrl; },
+        onPending: function(){ window.location = riwayatUrl; },
+        onError:   function(){
+          out.textContent = 'Pembayaran gagal. Coba lagi atau pakai transfer manual.';
+          btn.disabled = false; btn.textContent = 'Bayar Sekarang';
+        },
+        onClose:   function(){
+          btn.disabled = false; btn.textContent = 'Bayar Sekarang';
+          out.textContent = 'Popup ditutup. Transaksi masih bisa dilanjutkan dari riwayat.';
+        }
+      });
+    } catch (e) {
+      out.textContent = 'Error: ' + e;
+      btn.disabled = false; btn.textContent = 'Bayar Sekarang';
+    }
+  });
+})();
+</script>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

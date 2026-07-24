@@ -117,7 +117,15 @@ $routes->group('pelanggan', ['filter' => 'role:pelanggan'], function ($routes) {
 
     $routes->get('pembayaran/riwayat/(:num)', 'Pelanggan\\PembayaranController::riwayat/$1');
     $routes->get('pembayaran/file/(:num)', 'Pelanggan\\PembayaranController::file/$1');
+
+    // Midtrans Snap: minta token (CSRF ON) + polling status setelah popup.
+    $routes->post('pembayaran/(:num)/snap-token', 'Pelanggan\\PembayaranController::snapToken/$1');
+    $routes->get('pembayaran/(:num)/status', 'Pelanggan\\PembayaranController::status/$1');
 });
+
+// Webhook Midtrans (Payment Notification URL). Tanpa auth — identitas
+// diverifikasi via signature_key sha512. CSRF di-exempt di Filters.php.
+$routes->post('payment/midtrans/notify', 'PaymentWebhookController::notify');
 
 /*
  * --------------------------------------------------------------------

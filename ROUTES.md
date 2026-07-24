@@ -41,6 +41,9 @@ Filter terpusat via `Filters::$filters`: role:admin (admin/*), role:editor (edit
 | GET | `/pelanggan/pembayaran/ganti/:num` | Pelanggan\PembayaranController::edit/$1 | csrf role:pelanggan |
 | GET | `/pelanggan/pembayaran/riwayat/:num` | Pelanggan\PembayaranController::riwayat/$1 | csrf role:pelanggan |
 | GET | `/pelanggan/pembayaran/file/:num` | Pelanggan\PembayaranController::file/$1 | csrf role:pelanggan |
+| GET | `/pelanggan/pembayaran/:num/status` | Pelanggan\PembayaranController::status/$1 | csrf role:pelanggan |
+| POST | `/pelanggan/pembayaran/:num/snap-token` | Pelanggan\PembayaranController::snapToken/$1 | csrf role:pelanggan |
+| POST | `/payment/midtrans/notify` | PaymentWebhookController::notify | — (CSRF exempt; verifikasi signature sha512) |
 | GET | `/admin` | Admin\DashboardController::index | csrf role:admin |
 | GET | `/admin/paket` | Admin\PaketController::index | csrf role:admin |
 | GET | `/admin/paket/create` | Admin\PaketController::create | csrf role:admin |
