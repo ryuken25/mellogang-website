@@ -18,23 +18,35 @@ class WidenMoneyColumnsToBigint extends Migration
     public function up()
     {
         $widens = [
-            ['paket', 'harga', 'BIGINT(20) UNSIGNED NOT NULL DEFAULT 0'],
-            ['pemesanan', 'total_biaya', 'BIGINT(20) UNSIGNED NOT NULL DEFAULT 0'],
-            ['pembayaran', 'jumlah_bayar', 'BIGINT(20) UNSIGNED NOT NULL DEFAULT 0'],
-            ['pengeluaran_operasional', 'nominal', 'BIGINT(20) UNSIGNED NOT NULL DEFAULT 0'],
+            ['paket', 'harga'],
+            ['pemesanan', 'total_biaya'],
+            ['pembayaran', 'jumlah_bayar'],
+            ['pengeluaran_operasional', 'nominal'],
         ];
 
-        foreach ($widens as [$table, $col, $def]) {
+        $isPostgre = $this->db->DBDriver === 'Postgre';
+
+        foreach ($widens as [$table, $col]) {
             if (! $this->db->tableExists($table)) {
                 continue;
             }
             if (! $this->db->fieldExists($col, $table)) {
                 continue;
             }
+
+            $qTable = $this->db->escapeIdentifiers($table);
+            $qCol   = $this->db->escapeIdentifiers($col);
+
             // Tabel paket.harga NOT NULL DEFAULT 1 sebelumnya (lihat CreatePaketTable).
             // Kita pakai DEFAULT 0 untuk konsistensi.
-            $sql = "ALTER TABLE `{$table}` MODIFY COLUMN `{$col}` {$def}";
-            $this->db->query($sql);
+            if ($isPostgre) {
+                // Postgres tidak punya UNSIGNED; BIGINT + NOT NULL + DEFAULT 0.
+                $this->db->query("ALTER TABLE {$qTable} ALTER COLUMN {$qCol} TYPE BIGINT");
+                $this->db->query("ALTER TABLE {$qTable} ALTER COLUMN {$qCol} SET DEFAULT 0");
+                $this->db->query("ALTER TABLE {$qTable} ALTER COLUMN {$qCol} SET NOT NULL");
+            } else {
+                $this->db->query("ALTER TABLE {$qTable} MODIFY COLUMN {$qCol} BIGINT(20) UNSIGNED NOT NULL DEFAULT 0");
+            }
         }
     }
 

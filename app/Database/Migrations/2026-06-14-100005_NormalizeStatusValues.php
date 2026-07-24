@@ -79,8 +79,10 @@ class NormalizeStatusValues extends Migration
             if ($oldLower === $newLower) {
                 continue; // tidak perlu diubah
             }
+            $qTable = $this->db->escapeIdentifiers($table);
+            $qCol   = $this->db->escapeIdentifiers($col);
             $this->db->query(
-                "UPDATE `{$table}` SET `{$col}` = ? WHERE LOWER(TRIM(`{$col}`)) = ?",
+                "UPDATE {$qTable} SET {$qCol} = ? WHERE LOWER(TRIM({$qCol})) = ?",
                 [$new, $oldLower]
             );
         }

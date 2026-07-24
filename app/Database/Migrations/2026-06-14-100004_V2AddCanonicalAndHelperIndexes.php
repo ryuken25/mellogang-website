@@ -6,13 +6,13 @@ use CodeIgniter\Database\Migration;
 
 /**
  * Buat UNIQUE INDEX untuk email_canonical (kalau belum ada) dan
- * google_id (kalau belum ada). Hanya dijalankan di MySQL karena
- * cek information_schema.
+ * google_id (kalau belum ada).
  *
  * Tambahan: index untuk kolom yang sering difilter agar query tidak
  * pakai LOWER() lagi.
  *
- * Idempotent: cek information_schema.statistics dulu.
+ * Idempotent lintas driver: MySQL cek information_schema.statistics,
+ * Postgres pakai CREATE INDEX IF NOT EXISTS.
  */
 class V2AddCanonicalAndHelperIndexes extends Migration
 {
@@ -52,36 +52,41 @@ class V2AddCanonicalAndHelperIndexes extends Migration
     }
 
     /**
-     * Cek + buat UNIQUE index. Pakai information_schema.statistics
-     * supaya tidak error kalau index sudah ada.
+     * Cek + buat UNIQUE index, idempotent lintas driver.
+     * MySQL: cek information_schema.statistics. Postgres: IF NOT EXISTS.
      */
     private function ensureUniqueIndex(string $table, string $column, string $indexName): void
     {
-        if ($this->indexExists($table, $indexName)) {
-            return;
-        }
-        $this->db->query("CREATE UNIQUE INDEX `{$indexName}` ON `{$table}` (`{$column}`)");
+        $this->createIndex($table, [$column], $indexName, true);
     }
 
     private function ensureIndex(string $table, string|array $column, ?string $indexName = null): void
     {
-        if (is_array($column)) {
-            $cols = $column;
-            $name = $indexName ?? $table . '_' . implode('_', $cols) . '_idx';
-            if ($this->indexExists($table, $name)) {
-                return;
-            }
-            $colList = implode(',', array_map(fn($c) => "`{$c}`", $cols));
-            $this->db->query("CREATE INDEX `{$name}` ON `{$table}` ({$colList})");
-            return;
-        }
-        $name = $indexName ?? $table . '_' . $column . '_idx';
-        if ($this->indexExists($table, $name)) {
-            return;
-        }
-        $this->db->query("CREATE INDEX `{$name}` ON `{$table}` (`{$column}`)");
+        $cols = is_array($column) ? $column : [$column];
+        $name = $indexName ?? $table . '_' . implode('_', $cols) . '_idx';
+        $this->createIndex($table, $cols, $name, false);
     }
 
+    private function createIndex(string $table, array $cols, string $name, bool $unique): void
+    {
+        $isPostgre = $this->db->DBDriver === 'Postgre';
+
+        if (! $isPostgre && $this->indexExists($table, $name)) {
+            return;
+        }
+
+        $unq     = $unique ? 'UNIQUE ' : '';
+        $ifne    = $isPostgre ? 'IF NOT EXISTS ' : '';
+        $qName   = $this->db->escapeIdentifiers($name);
+        $qTable  = $this->db->escapeIdentifiers($table);
+        $colList = implode(',', array_map(fn ($c) => $this->db->escapeIdentifiers($c), $cols));
+
+        $this->db->query("CREATE {$unq}INDEX {$ifne}{$qName} ON {$qTable} ({$colList})");
+    }
+
+    /**
+     * Hanya dipakai di MySQL (Postgres pakai IF NOT EXISTS).
+     */
     private function indexExists(string $table, string $indexName): bool
     {
         $row = $this->db->query(

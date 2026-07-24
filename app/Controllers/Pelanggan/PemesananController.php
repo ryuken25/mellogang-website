@@ -4,6 +4,7 @@ namespace App\Controllers\Pelanggan;
 
 use App\Controllers\BaseController;
 use App\Models\PaketModel;
+use App\Support\Status;
 
 class PemesananController extends BaseController
 {
@@ -62,16 +63,19 @@ class PemesananController extends BaseController
             ]);
         }
 
-        // Lazy check: batalkan pesanan yang belum dibayar lebih dari 2 jam
-        $db->query(
-            "UPDATE pemesanan SET status_pemesanan = 'batal'
-             WHERE status_pemesanan = 'menunggu pembayaran'
-             AND tanggal_pemesanan <= DATE_SUB(NOW(), INTERVAL 2 HOUR)"
-        );
+        // Lazy check: batalkan pesanan yang belum dibayar lebih dari 2 jam.
+        // Cutoff dihitung dari jam DB (sumber yang sama dengan tanggal_pemesanan)
+        // supaya portable MySQL/Postgres — DATE_SUB itu MySQL-only.
+        $dbNow  = (string) $db->query('SELECT NOW() AS now')->getRow()->now;
+        $cutoff = date('Y-m-d H:i:s', strtotime($dbNow) - 2 * 3600);
+        $db->table('pemesanan')
+            ->where('status_pemesanan', Status::ORDER_MENUNGGU_PEMBAYARAN)
+            ->where('tanggal_pemesanan <=', $cutoff)
+            ->update(['status_pemesanan' => Status::ORDER_BATAL]);
 
         $booked = (int)$db->table('pemesanan')
             ->where('tanggal_acara', $date)
-            ->whereNotIn('status_pemesanan', ['batal', 'ditolak'])
+            ->whereNotIn('status_pemesanan', [Status::ORDER_BATAL, Status::ORDER_DITOLAK])
             ->countAllResults();
 
         $capacity = 2;

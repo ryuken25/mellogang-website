@@ -106,11 +106,13 @@ class V2AddAuthAndDeliverableColumns extends Migration
             // Backfill email_canonical = lower(email). Versi sederhana —
             // aplikasi punya EmailNormalizer yang lebih akurat; untuk
             // user lama cukup lower-case trim dulu.
-            $this->db->query("UPDATE user SET email_canonical = LOWER(TRIM(email)) WHERE email_canonical IS NULL OR email_canonical = ''");
+            // "user" adalah reserved word di Postgres — wajib lewat escapeIdentifiers.
+            $userTable = $this->db->escapeIdentifiers('user');
+            $this->db->query("UPDATE {$userTable} SET email_canonical = LOWER(TRIM(email)) WHERE email_canonical IS NULL OR email_canonical = ''");
 
             // Backfill email_verified_at ke created_at agar user seeder
             // (yang dibuat sebelum overhaul) tidak terkunci.
-            $this->db->query("UPDATE user SET email_verified_at = created_at WHERE email_verified_at IS NULL");
+            $this->db->query("UPDATE {$userTable} SET email_verified_at = created_at WHERE email_verified_at IS NULL");
         }
 
         // ============ JADWAL_PRODUKSI: kolom deliverable ============

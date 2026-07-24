@@ -81,6 +81,14 @@ class PengeluaranOperasionalSeeder extends Seeder
                 $r['tgl'] = $r['tanggal'];
                 unset($r['tanggal']);
             }
+            if (!in_array('tanggal', $fields, true) && in_array('tanggal_pengeluaran', $fields, true)) {
+                $r['tanggal_pengeluaran'] = $r['tanggal'];
+                unset($r['tanggal']);
+            }
+            if (!in_array('kategori', $fields, true) && in_array('nama_pengeluaran', $fields, true)) {
+                $r['nama_pengeluaran'] = trim($r['kategori'] . ' — ' . ($r['deskripsi'] ?? ''), ' —');
+                unset($r['kategori'], $r['deskripsi']);
+            }
 
             $r = $this->filterToFields($table, $this->withTimestamps($table, $r));
             $this->db->table($table)->insert($r);

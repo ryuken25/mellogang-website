@@ -44,6 +44,12 @@ class Database extends Config
         'port'         => 3306,
         'numberNative' => false,
         'foundRows'    => false,
+        // Kunci khusus Postgres (mis. Neon). Harus ada di array ini supaya
+        // bisa dioverride via .env (env hanya menimpa key yang sudah terdefinisi).
+        // 'options' => 'endpoint=ep-xxx' dipakai Neon untuk libpq tanpa SNI.
+        'schema'       => 'public',
+        'sslmode'      => '',
+        'options'      => '',
         'dateFormat'   => [
             'date'     => 'Y-m-d',
             'datetime' => 'Y-m-d H:i:s',
